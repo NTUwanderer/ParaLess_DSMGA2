@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include "global.h"
 #include "nk-wa.h"
+#include <vector>
 
 using namespace std;
 
@@ -153,6 +154,7 @@ public:
     static bool hit;
     static unordered_map<unsigned long, double> cache;
 
+	vector<char> bm_history;
 protected:
 
     unsigned long *gene;
