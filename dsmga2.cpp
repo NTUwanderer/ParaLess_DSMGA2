@@ -154,6 +154,7 @@ void DSMGA2::oneRun (bool output) {
         }
     }
 
+	cout << "showStatistics" << endl;
     if (output)
         showStatistics ();
 
@@ -202,6 +203,7 @@ void DSMGA2::showStatistics () {
     printf ("Gen:%d  N:%d  Fitness:(Max/Mean/Min):%f/%f/%f ",
             generation, nCurrent, stFitness.getMax (), stFitness.getMean (),
             stFitness.getMin ());
+	printf ("bestIndex:%d ", bestIndex);
     printf ("best chromosome:");
     population[bestIndex].printOut();
     printf ("\n");
@@ -607,8 +609,8 @@ void DSMGA2::mixing() {
 
 
     bool ADD;
-    int timer = 0;
-    bool second = false;
+    //int timer = 0;
+    //bool second = false;
     do {
 
 
@@ -674,7 +676,7 @@ void DSMGA2::mixing() {
             }*/
         }
         else {
-           second = false;
+           //second = false;
            ADD = false;
         }
 
@@ -1077,6 +1079,7 @@ void DSMGA2::increaseOne () {
                 bool taken = restrictedMixing(population[nCurrent-1], mask);
             }
   */     
+	cout << "nCurrent: " << nCurrent << ", BMhistory.size(): " << BMhistory.size() << endl;
 
     int size = BMhistory.size();
     int *rrr = new int[size];
@@ -1089,6 +1092,9 @@ void DSMGA2::increaseOne () {
         else
             backMixing(BMhistory[r].pattern, BMhistory[r].mask, population[nCurrent-1]);
     }
+
+	char* temp = &(population[19].bm_history[0]);
+	cout << "size: " << population[19].bm_history.size() << ", " << temp << endl;
 
     //population[nCurrent-1].GHC();
 
