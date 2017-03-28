@@ -1,1 +1,4 @@
 *.o
+*.swp
+DSMGA2
+history
