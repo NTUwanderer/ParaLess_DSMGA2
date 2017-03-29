@@ -211,6 +211,7 @@ Chromosome& Chromosome::operator= (const Chromosome& c) {
 
     memcpy(gene, c.gene, sizeof(long) * lengthLong);
 
+	bm_history = c.bm_history;
     return *this;
 }
 

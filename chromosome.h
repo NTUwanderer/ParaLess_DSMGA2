@@ -31,9 +31,9 @@ public:
     Chromosome (const Chromosome& c) {
         count = 0;
         layer = 0;
-	gene = NULL;
+		gene = NULL;
         init();
-		  bm_history = c.bm_history;
+		bm_history = c.bm_history;
         *this = c;
     }
 

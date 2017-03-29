@@ -132,6 +132,7 @@ main (int argc, char *argv[]) {
 
 		fstream fs (fileName.c_str(), fstream::out);
 
+		fs << "bestIndex: " << ga.bestIndex << '\n';
 		fs << "size: " << ga.population.size() << '\n';
 	
 		for (vector<Chromosome>::iterator it = ga.population.begin(); it != ga.population.end(); ++it) {
@@ -142,6 +143,7 @@ main (int argc, char *argv[]) {
 			}
 			char* temp = &(it->bm_history[0]);
 			fs << it->bm_history.size() << ' ';
+			fs << it->getFitness() << ' ';
 			fs.write(temp, it->bm_history.size());
 			fs.put('\n');
 		}

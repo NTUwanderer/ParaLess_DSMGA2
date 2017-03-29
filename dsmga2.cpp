@@ -488,6 +488,8 @@ bool DSMGA2::restrictedMixing(Chromosome& ch, list<int>& mask) {
             taken = true;
             ch = trial;
             ch.layer++;
+
+			ch.bm_history.push_back('A');
         }
         else {
             if (trial.getFitness() >= ch.getFitness()) {
@@ -497,6 +499,7 @@ bool DSMGA2::restrictedMixing(Chromosome& ch, list<int>& mask) {
                 taken = true;
                 ch = trial;
                 //ch.layer++;
+				ch.bm_history.push_back('B');
             }
         }
 
