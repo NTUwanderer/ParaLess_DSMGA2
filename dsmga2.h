@@ -57,6 +57,7 @@ public:
 
     bool isSteadyState ();
 
+    void addInOrigPopu (Chromosome& );
 //protected:
 public:
 

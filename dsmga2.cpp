@@ -185,7 +185,7 @@ bool DSMGA2::shouldTerminate () {
     /*
     if (stFitness.getMax() - 1e-10 <= stFitness.getMean() )
         termination = true;
-    	*/
+        */
 
     return termination;
 
@@ -400,13 +400,15 @@ bool DSMGA2::backMixing(Chromosome& source, list<int>& mask, Chromosome& des) {
     if (trial.getFitness() > real.getFitness()) {
         pHash.erase(real.getKey());
         pHash[trial.getKey()] = trial.getFitness();
+        addInOrigPopu(trial);
+        ++nOrig;
         real = trial;
         real.layer++;
-		real.bm_history.push_back('1');
+        real.bm_history.push_back('1');
         return true;
     }
 
-	real.bm_history.push_back('0');
+    real.bm_history.push_back('0');
     return false;
 
 }
@@ -435,25 +437,27 @@ bool DSMGA2::backMixingE(Chromosome& source, list<int>& mask, Chromosome& des) {
     if (trial.getFitness() > real.getFitness()) {
         pHash.erase(real.getKey());
         pHash[trial.getKey()] = trial.getFitness();
+        addInOrigPopu(trial);
 
         EQ = false;
         real = trial;
         real.layer++;
-		real.bm_history.push_back('1');
+        real.bm_history.push_back('1');
         return true;
     }
 
     if (trial.getFitness() >= real.getFitness()) {
         pHash.erase(real.getKey());
         pHash[trial.getKey()] = trial.getFitness();
+        addInOrigPopu(trial);
 
         real = trial;
         //real.layer++;
-		real.bm_history.push_back('2');
+        real.bm_history.push_back('2');
         return true;
     }
 
-	real.bm_history.push_back('0');
+    real.bm_history.push_back('0');
     return false;
 
 }
@@ -484,22 +488,24 @@ bool DSMGA2::restrictedMixing(Chromosome& ch, list<int>& mask) {
         if (trial.getFitness() > ch.getFitness()) {
             pHash.erase(ch.getKey());
             pHash[trial.getKey()] = trial.getFitness();
+            addInOrigPopu(trial);
 
             taken = true;
             ch = trial;
             ch.layer++;
 
-			ch.bm_history.push_back('A');
+            ch.bm_history.push_back('A');
         }
         else {
             if (trial.getFitness() >= ch.getFitness()) {
                 pHash.erase(ch.getKey());
                 pHash[trial.getKey()] = trial.getFitness();
+                addInOrigPopu(trial);
 
                 taken = true;
                 ch = trial;
                 //ch.layer++;
-				ch.bm_history.push_back('B');
+                ch.bm_history.push_back('B');
             }
         }
 
@@ -1048,7 +1054,6 @@ void DSMGA2::increaseOne () {
         orig_fc[i].init(nOrig);
     }
     
-/*
             bool temp = SELECTION;
             SELECTION = false;
             OrigSelection();
@@ -1079,13 +1084,12 @@ void DSMGA2::increaseOne () {
 
                 bool taken = restrictedMixing(population[nCurrent-1], mask);
             }
-  */     
 
     int size = BMhistory.size();
     int *rrr = new int[size];
     myRand.uniformArray(rrr, size, 0, size-1);
     for (int i=0; i<size; ++i) {
-        //int r = i;
+//        int r = i;
         int r = rrr[i];
         if (BMhistory[r].eq)
             backMixingE(BMhistory[r].pattern, BMhistory[r].mask, population[nCurrent-1]);
@@ -1172,3 +1176,16 @@ void DSMGA2::decreaseOne(int index) {
     population.erase(population.begin()+index);
 
 }
+
+void DSMGA2::addInOrigPopu (Chromosome& c) {
+    
+    ++nOrig;
+
+    orig_popu.push_back(c);
+
+    pHashOrig[c.getKey()] = c.getFitness();
+
+    orig_selectionIndex.emplace_back();
+
+}
+

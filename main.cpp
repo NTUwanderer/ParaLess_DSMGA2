@@ -125,30 +125,31 @@ main (int argc, char *argv[]) {
 
         fflush (NULL);
 
-		stringstream ss;
-		ss << i;
+        stringstream ss;
+        ss << i;
 
-		string fileName = "history/c" + ss.str();
+        string fileName = "history/c" + ss.str();
 
-		fstream fs (fileName.c_str(), fstream::out);
+        fstream fs (fileName.c_str(), fstream::out);
 
-		fs << "bestIndex: " << ga.bestIndex << '\n';
-		fs << "size: " << ga.population.size() << '\n';
-	
-		for (vector<Chromosome>::iterator it = ga.population.begin(); it != ga.population.end(); ++it) {
-			if (it->bm_history.empty()) {
-				fs.put('0');
-				fs.put('\n');
-				continue;
-			}
-			char* temp = &(it->bm_history[0]);
-			fs << it->bm_history.size() << ' ';
-			fs << it->getFitness() << ' ';
-			fs.write(temp, it->bm_history.size());
-			fs.put('\n');
-		}
+        fs << "bestIndex: " << ga.bestIndex << '\n';
+        fs << "size: " << ga.population.size() << '\n';
+        fs << "orig_popu size: " << ga.orig_popu.size() << '\n';
+    
+        for (vector<Chromosome>::iterator it = ga.population.begin(); it != ga.population.end(); ++it) {
+            if (it->bm_history.empty()) {
+                fs.put('0');
+                fs.put('\n');
+                continue;
+            }
+            char* temp = &(it->bm_history[0]);
+            fs << it->bm_history.size() << ' ';
+            fs << it->getFitness() << ' ';
+            fs.write(temp, it->bm_history.size());
+            fs.put('\n');
+        }
 
-		fs.close();
+        fs.close();
     }
 
     if (fffff == 4)
