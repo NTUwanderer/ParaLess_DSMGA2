@@ -118,6 +118,13 @@ public:
         evaluated = false;
     }
 
+    void printMaxCnt () {
+        unsigned long m = cnt[0];
+        for (int i = 1; i < length; ++i)
+            m = max(m, cnt[i]);
+        printf("%d\n", m);
+    }
+
     /** real evaluator */
     double evaluate ();
 
@@ -156,6 +163,7 @@ public:
     static unordered_map<unsigned long, double> cache;
 
 	vector<char> bm_history;
+    unsigned long *cnt;
 protected:
 
     unsigned long *gene;

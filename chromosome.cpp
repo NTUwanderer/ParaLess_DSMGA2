@@ -16,12 +16,14 @@ Chromosome::Chromosome () {
     layer = 0;
     count = 0;
     gene = NULL;
+    cnt = NULL;
     init ();
 }
 
 
 Chromosome::~Chromosome () {
     if (gene != NULL) delete []gene;
+    if (cnt != NULL) delete []cnt;
 }
 
 void Chromosome::init () {
@@ -30,7 +32,11 @@ void Chromosome::init () {
         delete []gene;
 
     gene = new unsigned long [lengthLong];
+    cnt = new unsigned long [lengthLong];
     gene[lengthLong-1] = 0;
+
+    // Fill with Zeros bro
+    memset(cnt, 0, sizeof(unsigned long)*lengthLong);
 
     layer = 0;
     count = 0;
@@ -43,6 +49,9 @@ void Chromosome::init0 () {
         delete []gene;
 
     gene = new unsigned long [lengthLong];
+    cnt = new unsigned long [lengthLong];
+
+    memset(cnt, 0, sizeof(unsigned long)*lengthLong);
 
     for (int i=0; i<lengthLong; ++i)
         gene[i] = 0;
@@ -59,6 +68,9 @@ void Chromosome::initR () {
 
     gene = new unsigned long [lengthLong];
     gene[lengthLong-1] = 0;
+    cnt = new unsigned long [lengthLong];
+
+    memset(cnt, 0, sizeof(unsigned long)*lengthLong);
 
     key = 0;
     for (int i=0; i<length; ++i) {

@@ -371,6 +371,11 @@ bool DSMGA2::restrictedMixing(Chromosome& ch, int pos) {
 bool DSMGA2::restrictedMixing(Chromosome& ch) {
 
     int r = myRand.uniformInt(0, ell-1);
+    int rr = myRand.uniformInt(0, ell-1);
+
+    while (r != rr) rr = myRand.uniformInt(0, ell-1);
+    r = (ch.cnt[r] > ch.cnt[rr]) ? rr : r;
+
     return restrictedMixing(ch, r);
 
 }
@@ -513,6 +518,7 @@ bool DSMGA2::restrictedMixing(Chromosome& ch, list<int>& mask) {
     if (lastUB != 0) {
         while (mask.size() > lastUB)
             mask.pop_back();
+        ch.cnt[*(mask.begin())]++;
     }
 
     return taken;
