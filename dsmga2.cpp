@@ -360,7 +360,20 @@ bool DSMGA2::restrictedMixing(Chromosome& ch, int pos) {
             }
             */
 
-            if (!NOHIS) BMhistory.push_back(BMRecord(ch, mask, EQ, (double)sum/(double)nCurrent));
+            if (!NOHIS) {
+                BMRecord record = BMRecord(ch, mask, EQ, (double)sum/(double)nCurrent);
+                list<bool> bits;
+                for (list<int>::const_iterator it = mask.begin(); it != mask.end(); ++it)
+                    bits.push_back((bool)ch.getVal(*it));
+                MyHash myHash = MyHash(mask, bits);
+                
+                if (bmHash.find(myHash.getKey()) == bmHash.end()) {
+                    bmHash[myHash.getKey()] = 1;
+                    BMhistory.push_back(record);
+                } else if (++bmHash[myHash.getKey()] % 2 == 1) {
+                    BMhistory.push_back(record);
+                }
+            }
         }
     }
 

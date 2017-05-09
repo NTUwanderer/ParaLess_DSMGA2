@@ -15,6 +15,7 @@
 #include "doublelinkedlistarray.h"
 #include "fastcounting.h"
 #include "bmrecord.h"
+#include "myhash.h"
 
 class DSMGA2 {
 public:
@@ -74,6 +75,8 @@ public:
     bool EQ;
     unordered_map<unsigned long, double> pHash; // to check if a chromosome is in the population
     unordered_map<unsigned long, double> pHashOrig; // to check if a chromosome is in the population
+
+    unordered_map<unsigned long, unsigned> bmHash;
 
     vector<BMRecord> BMhistory;
 
