@@ -370,9 +370,15 @@ bool DSMGA2::restrictedMixing(Chromosome& ch, int pos) {
                 if (bmHash.find(myHash.getKey()) == bmHash.end()) {
                     bmHash[myHash.getKey()] = 1;
                     BMhistory.push_back(record);
-                } else if (++bmHash[myHash.getKey()] % 2 == 1) {
+                } else {
+                    BMhistory.push_back(record);
+                    ++bmHash[myHash.getKey()];
+                }
+                /*
+                else if (++bmHash[myHash.getKey()] % 2 == 1) {
                     BMhistory.push_back(record);
                 }
+                */
             }
         }
     }
@@ -618,7 +624,7 @@ void DSMGA2::mixing() {
     int timer = 0;
     bool second = false;
     do {
-
+        size_t old_bmHash_size = bmHash.size();
 
         //if (++timer % 5 == 0) {
         if (SELECTION)
@@ -651,7 +657,8 @@ void DSMGA2::mixing() {
             if (population[i].layer > old[i])
                 ++sum;
 
-        if (2*sum < nCurrent) {
+        //if (2*sum < nCurrent) {
+        if (2 * (bmHash.size() - old_bmHash_size) < nCurrent) {
 
             ADD = true;
             /*
