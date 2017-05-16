@@ -368,11 +368,13 @@ bool DSMGA2::restrictedMixing(Chromosome& ch, int pos) {
                 MyHash myHash = MyHash(mask, bits);
                 
                 if (bmHash.find(myHash.getKey()) == bmHash.end()) {
-                    bmHash[myHash.getKey()] = 1;
+                    bmHash[myHash.getKey()] = BMhistory.size();
                     BMhistory.push_back(record);
                 } else {
                     BMhistory.push_back(record);
-                    ++bmHash[myHash.getKey()];
+                    if (!(BMhistory[bmHash[myHash.getKey()]] == record)) {
+                        cout << "Not Equal\n";
+                    }
                 }
                 /*
                 else if (++bmHash[myHash.getKey()] % 2 == 1) {
