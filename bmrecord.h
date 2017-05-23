@@ -4,6 +4,7 @@
 
 #include <list>
 #include "chromosome.h"
+#include "myhash.h"
 
 
 class BMRecord {
@@ -16,6 +17,10 @@ public:
         rate = _rate;
 
         mask.sort();
+        list<bool> bits;
+        for (list<int>::const_iterator it = mask.begin(); it != mask.end(); ++it)
+            bits.push_back((bool)_pattern.getVal(*it));
+        myHash = MyHash(mask, bits);
     }
 
     bool operator< (const BMRecord& rec) const {
@@ -52,6 +57,8 @@ public:
     list<int> mask;
     bool eq;
     double rate;
+    MyHash myHash;
+    unsigned bm_index;
 };
 
 #endif

@@ -365,22 +365,27 @@ bool DSMGA2::restrictedMixing(Chromosome& ch, int pos) {
                 list<bool> bits;
                 for (list<int>::const_iterator it = mask.begin(); it != mask.end(); ++it)
                     bits.push_back((bool)ch.getVal(*it));
-                MyHash myHash = MyHash(mask, bits);
+                MyHash& myHash = record.myHash;
                 
                 if (bmHash.find(myHash.getKey()) == bmHash.end()) {
                     bmHash[myHash.getKey()] = BMhistory.size();
-                    BMhistory.push_back(record);
+                    record.bm_index = bmRelations.size();
+
+                    maskIndexToRecordIndex.push_back(BMhistory.size());
+
+                    vector<double> relation;
+                    vector<unsigned> sorted;
+                    bmRelations.push_back(relation);
+                    bmSorted.push_back(sorted);
+
+                    for (vector<vector<double> >::iterator it = bmRelations.begin(); it != bmRelations.end(); ++it)
+                        it->resize(bmRelations.size(), 0);
+
                 } else {
-                    BMhistory.push_back(record);
-                    if (!(BMhistory[bmHash[myHash.getKey()]] == record)) {
-                        cout << "Not Equal\n";
-                    }
+                    record.bm_index = BMhistory[bmHash[myHash.getKey()]].bm_index;
                 }
-                /*
-                else if (++bmHash[myHash.getKey()] % 2 == 1) {
-                    BMhistory.push_back(record);
-                }
-                */
+
+                BMhistory.push_back(record);
             }
         }
     }
@@ -467,6 +472,52 @@ bool DSMGA2::backMixingE(Chromosome& source, list<int>& mask, Chromosome& des) {
 
         real = trial;
         //real.layer++;
+        return true;
+    }
+
+    return false;
+
+}
+
+bool DSMGA2::backMixingE(Chromosome& source, list<int>& mask, Chromosome& des, bool& isEq) {
+
+    Chromosome trial = des;
+
+    for (list<int>::iterator it = mask.begin(); it != mask.end(); ++it)
+        trial.setVal(*it, source.getVal(*it));
+
+    Chromosome& real = des;
+
+    isEq = false;
+    if (RTRBM) {
+        int minDist = trial.getHammingDistance(des);
+        for (int i=0; i<RTRW; ++i) {
+            int r = myRand.uniformInt(0, nCurrent-1);
+            int dist = trial.getHammingDistance(population[r]);
+            if (minDist > dist) {
+                minDist = dist;
+                real = population[r];
+            }
+        }
+    }
+
+    if (trial.getFitness() > real.getFitness()) {
+        pHash.erase(real.getKey());
+        pHash[trial.getKey()] = trial.getFitness();
+
+        EQ = false;
+        real = trial;
+        real.layer++;
+        return true;
+    }
+
+    if (trial.getFitness() >= real.getFitness()) {
+        pHash.erase(real.getKey());
+        pHash[trial.getKey()] = trial.getFitness();
+
+        real = trial;
+        //real.layer++;
+        isEq = true;
         return true;
     }
 
@@ -1096,8 +1147,82 @@ void DSMGA2::increaseOne () {
   */     
 
     int size = BMhistory.size();
+    int upLimit = size;
+    int threshold = 7 * size / 10;
     int *rrr = new int[size];
     myRand.uniformArray(rrr, size, 0, size-1);
+    int prevMaskIndex = -1;
+    unsigned currentMaskIndex;
+    bool nextRandom = true;
+    bool isEq;
+    bool success;
+
+    int i = 0;
+    while (i < upLimit) {
+        if (!nextRandom && prevMaskIndex != -1) {
+            unsigned j = 0;
+            int index = (i + 1) % size;
+            success = false;
+            while (myRand.uniformInt(0, 9) < 7 && j < bmSorted[prevMaskIndex].size()) {
+                currentMaskIndex = bmSorted[prevMaskIndex][j];
+                BMRecord& record = BMhistory[maskIndexToRecordIndex[currentMaskIndex]];
+                ++j;
+                
+                //success = false;
+                isEq = false;
+                if (record.eq)
+                    success = backMixingE(record.pattern, record.mask, population[nCurrent-1], isEq);
+                else
+                    success = backMixing(record.pattern, record.mask, population[nCurrent-1]);
+
+                if (success) {
+                    if (isEq) {
+                        updateRelation(prevMaskIndex, currentMaskIndex, 1);
+                    } else {
+                        updateRelation(prevMaskIndex, currentMaskIndex, 2);
+                    }
+                    prevMaskIndex = currentMaskIndex;
+                    break;
+                } else {
+                    updateRelation(prevMaskIndex, currentMaskIndex, -0.5);
+                }
+
+                index = (index + 1) % size;
+            }
+
+            nextRandom = (!success);
+
+        } else {
+            int r = rrr[i];
+            isEq = false;
+            ++i;
+
+            if (BMhistory[r].eq)
+                success = backMixingE(BMhistory[r].pattern, BMhistory[r].mask, population[nCurrent-1], isEq);
+            else
+                success = backMixing(BMhistory[r].pattern, BMhistory[r].mask, population[nCurrent-1]);
+
+            nextRandom = (!success);
+            if (prevMaskIndex == -1) {
+                if (success) {
+                    prevMaskIndex = BMhistory[r].bm_index;
+                }
+            } else {
+                currentMaskIndex = BMhistory[r].bm_index;
+                if (success) {
+                    if (isEq) {
+                        updateRelation(prevMaskIndex, currentMaskIndex, 2);
+                    } else {
+                        updateRelation(prevMaskIndex, currentMaskIndex, 4);
+                    }
+                    prevMaskIndex = currentMaskIndex;
+                } else {
+                    updateRelation(prevMaskIndex, currentMaskIndex, -1);
+                }
+            }
+        }
+    }
+    /*
     for (int i=0; i<size; ++i) {
         //int r = i;
         int r = rrr[i];
@@ -1106,6 +1231,7 @@ void DSMGA2::increaseOne () {
         else
             backMixing(BMhistory[r].pattern, BMhistory[r].mask, population[nCurrent-1]);
     }
+    */
 
     //population[nCurrent-1].GHC();
 
@@ -1185,4 +1311,129 @@ void DSMGA2::decreaseOne(int index) {
     pHash.erase(population[index].getKey());
     population.erase(population.begin()+index);
 
+}
+
+void DSMGA2::updateRelation(unsigned i, unsigned j, double delta) {
+
+    if (delta == 0)
+        return;
+
+    if (i == j) {
+        //cout << "i == j: " << i << ", bmRelations.size(): " << bmRelations.size() << ", size2: " << bmRelations[i].size() << endl;
+        return;
+    }
+
+    /*
+    printf("i: %u, j: %u, delta: %f, value: %f, bmSorted: ", i, j, delta, bmRelations[i][j]);
+    for (unsigned k = 0; k < bmSorted[i].size(); ++k)
+        cout << bmSorted[i][k] << " ";
+    cout << endl;
+    */
+    int index = getSortedIndex(i, j); // bmSorted[i][index] == j
+
+    if (bmRelations[i][j] > 1e-6) {
+        if (index == -1)
+            printf("Error: cannot find j: %u in bmSorted[%u]\n", j, i);
+        else if (bmSorted[i][index] != j)
+            printf("Error: bmSorted[%u][%i]: %u != j: %u", i, index, bmSorted[i][index], j);
+
+        bmRelations[i][j] += delta;
+
+        double value = bmRelations[i][j];
+
+        if (value <= 1e-6) {
+            bmSorted[i].erase(bmSorted[i].begin() + index);
+        } else if (delta > 0) {
+            for (int k = index - 1; k >= 0; --k) {
+                if (bmRelations[i][bmSorted[i][k]] < value) {
+                    bmSorted[i][k + 1] = bmSorted[i][k];
+                    bmSorted[i][k] = j;
+                } else {
+                    break;
+                }
+            }
+        } else {
+            for (unsigned k = index + 1; k < bmSorted[i].size(); ++k) {
+                if (bmRelations[i][bmSorted[i][k]] > value) {
+                    bmSorted[i][k - 1] = bmSorted[i][k];
+                    bmSorted[i][k] = j;
+                } else {
+                    break;
+                }
+            }
+        }
+    } else {
+        if (index != -1)
+            printf("Error: find j: %u in bmSorted[%u][%i]: %u\n", j, i, index, bmSorted[i][index]);
+
+        bmRelations[i][j] += delta;
+
+        double value = bmRelations[i][j];
+
+        if (bmRelations[i][j] > 0) {
+            bmSorted[i].push_back(j);
+            for (int k = bmSorted[i].size() - 2; k >= 0; --k) {
+                if (bmRelations[i][bmSorted[i][k]] < value) {
+                    bmSorted[i][k + 1] = bmSorted[i][k];
+                    bmSorted[i][k] = j;
+                } else {
+                    break;
+                }
+            }
+
+        }
+    }
+}
+
+int DSMGA2::getSortedIndex(unsigned i, unsigned j) const {
+
+    const vector<unsigned>& sorted = bmSorted[i];
+    if (sorted.empty())
+        return -1;
+
+    int start = 0, end = sorted.size() - 1, middle;
+
+    if (sorted[start] == j)
+        return start;
+    if (sorted[end] == j)
+        return end;
+    if (start == end)
+        return -1;
+
+    double value = bmRelations[i][j];
+    while (start != end) {
+        middle = (start + end) / 2;
+        if (middle == start)
+            return -1;
+
+        if (sorted[middle] == j)
+            return middle;
+
+        if (bmRelations[i][sorted[middle]] < value)
+            end = middle;
+        else if (bmRelations[i][sorted[middle]] > value)
+            start = middle;
+        else {
+            int k = middle + 1;
+            while (k < sorted.size()) {
+                if (sorted[k] == j)
+                    return k;
+                if (bmRelations[i][sorted[k]] != value)
+                    break;
+                ++k;
+            }
+            k = middle - 1;
+
+            while (k >= 0) {
+                if (sorted[k] == j)
+                    return k;
+                if (bmRelations[i][sorted[k]] != value)
+                    break;
+                --k;
+            }
+            return -1;
+        }
+    }
+
+    return start;
 }

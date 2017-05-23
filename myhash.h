@@ -7,6 +7,10 @@
 
 class MyHash {
 public:
+    MyHash () {
+
+    }
+
     MyHash (list<int> _mask, list<bool> _bits) {
         mask = _mask;
         bits = _bits;

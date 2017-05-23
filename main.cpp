@@ -122,6 +122,7 @@ main (int argc, char *argv[]) {
 
         fflush (NULL);
 
+        printf ("NumOfBMhash: %u\n", ga.bmHash.size());
     }
 
     if (fffff == 4)

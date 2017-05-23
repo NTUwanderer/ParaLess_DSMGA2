@@ -15,7 +15,6 @@
 #include "doublelinkedlistarray.h"
 #include "fastcounting.h"
 #include "bmrecord.h"
-#include "myhash.h"
 
 class DSMGA2 {
 public:
@@ -40,6 +39,7 @@ public:
     bool restrictedMixing(Chromosome& ch, int pos);
     bool backMixing(Chromosome& source, list<int>& mask, Chromosome& des);
     bool backMixingE(Chromosome& source, list<int>& mask, Chromosome& des);
+    bool backMixingE(Chromosome& source, list<int>& mask, Chromosome& des, bool& isEq);
 
     bool shouldTerminate ();
 
@@ -58,6 +58,8 @@ public:
 
     bool isSteadyState ();
 
+    void updateRelation(unsigned i, unsigned j, double delta);
+    int getSortedIndex(unsigned i, unsigned j) const;
 //protected:
 public:
 
@@ -77,6 +79,9 @@ public:
     unordered_map<unsigned long, double> pHashOrig; // to check if a chromosome is in the population
 
     unordered_map<unsigned long, unsigned> bmHash;
+    vector<vector<double> > bmRelations;
+    vector<vector<unsigned> > bmSorted;
+    vector<unsigned> maskIndexToRecordIndex;
 
     vector<BMRecord> BMhistory;
 
