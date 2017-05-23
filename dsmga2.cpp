@@ -377,15 +377,22 @@ bool DSMGA2::restrictedMixing(Chromosome& ch, int pos) {
                     vector<unsigned> sorted;
                     bmRelations.push_back(relation);
                     bmSorted.push_back(sorted);
+                    maskCounts.push_back(1);
 
                     for (vector<vector<double> >::iterator it = bmRelations.begin(); it != bmRelations.end(); ++it)
                         it->resize(bmRelations.size(), 0);
 
+                    BMhistory.push_back(record);
                 } else {
-                    record.bm_index = BMhistory[bmHash[myHash.getKey()]].bm_index;
+                    unsigned index = BMhistory[bmHash[myHash.getKey()]].bm_index;
+                    record.bm_index = index;
+
+                    ++(maskCounts[index]);
+
+                    if (maskCounts[index] % 2 == 0)
+                        BMhistory.push_back(record);
                 }
 
-                BMhistory.push_back(record);
             }
         }
     }
@@ -1163,7 +1170,7 @@ void DSMGA2::increaseOne () {
             unsigned j = 0;
             int index = (i + 1) % size;
             success = false;
-            while (myRand.uniformInt(0, 9) < 7 && j < bmSorted[prevMaskIndex].size()) {
+            while (myRand.uniformInt(0, 1) == 0 && j < bmSorted[prevMaskIndex].size()) {
                 currentMaskIndex = bmSorted[prevMaskIndex][j];
                 BMRecord& record = BMhistory[maskIndexToRecordIndex[currentMaskIndex]];
                 ++j;

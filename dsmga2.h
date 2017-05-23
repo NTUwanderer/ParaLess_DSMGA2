@@ -82,6 +82,7 @@ public:
     vector<vector<double> > bmRelations;
     vector<vector<unsigned> > bmSorted;
     vector<unsigned> maskIndexToRecordIndex;
+    vector<unsigned> maskCounts;
 
     vector<BMRecord> BMhistory;
 
