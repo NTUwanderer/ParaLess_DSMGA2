@@ -118,13 +118,19 @@ public:
         evaluated = false;
     }
 
-    void printMaxCnt () {
+    int getMaxCnt () {
         unsigned long m = cnt[0];
         for (int i = 1; i < length; ++i)
             m = max(m, cnt[i]);
-        printf("%d\n", m);
+        return m;
     }
 
+    int getMinCnt () {
+        unsigned long m = cnt[0];
+        for (int i = 1; i < length; ++i)
+            m = min(m, cnt[i]);
+        return m;
+    }
     /** real evaluator */
     double evaluate ();
 

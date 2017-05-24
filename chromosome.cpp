@@ -32,11 +32,11 @@ void Chromosome::init () {
         delete []gene;
 
     gene = new unsigned long [lengthLong];
-    cnt = new unsigned long [lengthLong];
+    cnt = new unsigned long [length];
     gene[lengthLong-1] = 0;
 
     // Fill with Zeros bro
-    memset(cnt, 0, sizeof(unsigned long)*lengthLong);
+    memset(cnt, 0, sizeof(unsigned long)*length);
 
     layer = 0;
     count = 0;
@@ -49,9 +49,9 @@ void Chromosome::init0 () {
         delete []gene;
 
     gene = new unsigned long [lengthLong];
-    cnt = new unsigned long [lengthLong];
+    cnt = new unsigned long [length];
 
-    memset(cnt, 0, sizeof(unsigned long)*lengthLong);
+    memset(cnt, 0, sizeof(unsigned long)*length);
 
     for (int i=0; i<lengthLong; ++i)
         gene[i] = 0;
@@ -68,9 +68,9 @@ void Chromosome::initR () {
 
     gene = new unsigned long [lengthLong];
     gene[lengthLong-1] = 0;
-    cnt = new unsigned long [lengthLong];
+    cnt = new unsigned long [length];
 
-    memset(cnt, 0, sizeof(unsigned long)*lengthLong);
+    memset(cnt, 0, sizeof(unsigned long)*length);
 
     key = 0;
     for (int i=0; i<length; ++i) {

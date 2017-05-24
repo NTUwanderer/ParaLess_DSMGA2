@@ -154,6 +154,10 @@ void DSMGA2::oneRun (bool output) {
         }
     }
 
+    for (int i = 0; i < nCurrent; ++i){
+        fprintf(stderr, "Chrmosome %d: %d %d\n", i+1, population[i].getMaxCnt(), population[i].getMinCnt());
+    }
+
     if (output)
         showStatistics ();
 
@@ -373,7 +377,6 @@ bool DSMGA2::restrictedMixing(Chromosome& ch) {
     int r = myRand.uniformInt(0, ell-1);
     int rr = myRand.uniformInt(0, ell-1);
 
-    while (r != rr) rr = myRand.uniformInt(0, ell-1);
     r = (ch.cnt[r] > ch.cnt[rr]) ? rr : r;
 
     return restrictedMixing(ch, r);
@@ -490,6 +493,12 @@ bool DSMGA2::restrictedMixing(Chromosome& ch, list<int>& mask) {
             pHash.erase(ch.getKey());
             pHash[trial.getKey()] = trial.getFitness();
 
+            size_t s = 1;
+            for (list<int>::iterator it = mask.begin(); it != mask.end(); ++it){
+                ch.cnt[(*it)]++;
+                if (s > ub) break;
+            }
+
             taken = true;
             ch = trial;
             ch.layer++;
@@ -506,6 +515,13 @@ bool DSMGA2::restrictedMixing(Chromosome& ch, list<int>& mask) {
                 //ch.layer++;
 				ch.bm_history.push_back('B');
             }
+
+            size_t s = 1;
+            for (list<int>::iterator it = mask.begin(); it != mask.end(); ++it){
+                ch.cnt[(*it)]++;
+                if (s > ub) break;
+            }
+
         }
 
         if (taken) {
@@ -652,7 +668,7 @@ void DSMGA2::mixing() {
             if (population[i].layer > old[i])
                 ++sum;
 
-        if (2*sum < nCurrent) {
+        if (4*sum < nCurrent) {
 
             ADD = true;
             /*
@@ -1090,13 +1106,14 @@ void DSMGA2::increaseOne () {
     int size = BMhistory.size();
     int *rrr = new int[size];
     myRand.uniformArray(rrr, size, 0, size-1);
+    bool doBM = false;
     for (int i=0; i<size; ++i) {
         //int r = i;
         int r = rrr[i];
         if (BMhistory[r].eq)
             backMixingE(BMhistory[r].pattern, BMhistory[r].mask, population[nCurrent-1]);
         else
-            backMixing(BMhistory[r].pattern, BMhistory[r].mask, population[nCurrent-1]);
+            doBM = backMixing(BMhistory[r].pattern, BMhistory[r].mask, population[nCurrent-1]);
     }
 
     //population[nCurrent-1].GHC();
@@ -1119,8 +1136,8 @@ void DSMGA2::increaseOne () {
     //cout << "=========================" << endl;
     //population[nCurrent-1].printOut();
     //cout << "-------------------------" << endl;
-
-
+*/
+/*
     for (int i = 0; i<size; ++i) {
 
         //int r = rrr[i];
@@ -1152,12 +1169,10 @@ void DSMGA2::increaseOne () {
         else
             BMhistory[r].rate = (1-alpha)*BMhistory[r].rate;
     }
+    }
 
-    delete []rrr;
-    */
+//    delete []rrr;
 
-
-    /*
             for (int i=0; i<nCurrent; ++i) {
                 for (int j=i+1; j<nCurrent; ++j) {
                     int dist = population[i].getHammingDistance(population[j]);
@@ -1167,7 +1182,7 @@ void DSMGA2::increaseOne () {
                     }
                 }
             }
-     */
+            */
 }
 
 

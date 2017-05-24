@@ -8,7 +8,7 @@ DIR=$1
 mkdir $DIR
 while [ $# -gt  1 ]
 do
-for (( i=0; $i<$REPEAT; i=$i+1 ))
+for (( i=1; $i<=$REPEAT; i=$i+1 ))
 do
 NUM=`echo $i | awk '{printf "%03d", $1}'`
 ELL=$2
