@@ -1,3 +1,6 @@
+#ifndef PYRA
+#define PYRA
+
 #include <list>
 
 #include "chromosome.h"
@@ -19,6 +22,7 @@ class Pyramid {
         int bestIndex;                              // The best performing chromosome population[bestIndex]
 
         unordered_map<unsigned long, double> pHash; // Population Hash
+        FastCounting* fastCounting;     
         
         list<int> *masks;                           // Restricted Mixing masks
         vector<int> selectionIndex;                 // Record of tournament selection
@@ -35,3 +39,5 @@ class Pyramid {
 
         Statistics stFitness;                       // Statistics to record the fitness of the population
 }
+
+#endif
