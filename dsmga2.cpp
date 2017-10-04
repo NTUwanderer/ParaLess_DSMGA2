@@ -346,8 +346,7 @@ bool DSMGA2::restrictedMixing(Chromosome& ch, int pos) {
 
         double sum = 0;
         if (!NOBM) {
-            /*
-            for (int i=0; i<nCurrent; ++i) {
+            for (int i=0; i<nCurrent-1; ++i) {
                 //if (2*population[orderN[i]].count > ell) continue;
 
                 bool bm = false;
@@ -358,7 +357,6 @@ bool DSMGA2::restrictedMixing(Chromosome& ch, int pos) {
 
                 if (bm) ++sum;
             }
-            */
 
             if (!NOHIS) BMhistory.push_back(BMRecord(ch, mask, EQ, (double)sum/(double)nCurrent));
         }
@@ -609,9 +607,27 @@ void DSMGA2::mixing() {
         findClique(i, masks[i]);
 
 
-    bool ADD;
+    //bool ADD;
     //int timer = 0;
     //bool second = false;
+    if (SELECTION)
+        selection();
+    // really learn model
+    buildFastCounting();
+    buildGraph();
+    for (int i=0; i<ell; ++i)
+        findClique(i, masks[i]);
+
+    genOrderELL();
+
+    for (int i=0; i<ell; ++i) {
+        int pos = orderELL[i];
+        double prevFitness = population[nCurrent-1].getFitness();
+        bool taken = restrictedMixing(population[nCurrent-1], pos);
+        if (taken && population[nCurrent-1].getFitness() > prevFitness) break;
+    }
+
+    /*
     do {
 
 
@@ -649,7 +665,6 @@ void DSMGA2::mixing() {
         if (2*sum < nCurrent) {
 
             ADD = true;
-            /*
             double maxF = -INF;
             int bestIndex=0;
             genOrderN();
@@ -664,8 +679,7 @@ void DSMGA2::mixing() {
                 ADD = false;
             else
                 ADD = true;
-           */
-            /*
+            
             if (!second) {
                 ADD = false;
                 second = true;
@@ -674,7 +688,7 @@ void DSMGA2::mixing() {
             }
             else {
                 ADD = true;
-            }*/
+            }
         }
         else {
            //second = false;
@@ -684,6 +698,7 @@ void DSMGA2::mixing() {
         delete []old;
 
     } while (!ADD);
+    */
 
     increaseOne();
 
