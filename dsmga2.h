@@ -90,6 +90,12 @@ public:
     int generation;
     int bestIndex;
 
+    // New Matrix related part
+    int **successCount;
+    double **weightCount;
+    int **failCount;
+    int resCount;
+
     vector<Chromosome> population;
     vector<Chromosome> orig_popu;
     FastCounting* fastCounting;
