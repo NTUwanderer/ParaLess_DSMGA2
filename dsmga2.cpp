@@ -1104,21 +1104,26 @@ void DSMGA2::increaseOne () {
 // Restricted Mixing
     double distance[nCurrent-1];
     vector<int> idx(nCurrent-1);
-    for (int i = 0; i < nCurrent-1; ++i)
-    {
+    for (int i = 0; i < nCurrent-1; ++i) {
         distance[i] = 0.0;
         idx[i] = i;
+        vector<int> diffBits;
         for (int j = 0; j < ell; ++j)
-            distance[i] += (ch.getVal(j) != population[i].getVal(j)) ? successCount[i][j] : 0.0;
+            if (ch.getVal(j) != population[i].getVal(j))
+                diffBits.push_back(j);
+
+        for (int j = 0; j < diffBits.size(); ++j)
+            for (int k = j + 1; k < diffBits.size(); ++k)
+                distance[i] += successCount[diffBits[j]][diffBits[k]];
     }
 
     sort(idx.begin(), idx.end(), [&distance](int a, int b) { return distance[a] < distance[b]; });
     printf("%d\n", idx[0]);
 
-    for (auto i : idx){
+    for (auto i : idx) {
         Chromosome chromo = population[i];
-        if (chromo.getFitness() > ch.getFitness())
-        {   list<int> masks;
+        if (chromo.getFitness() > ch.getFitness()) {
+            list<int> masks;
             for (int j = 0; j < ell; ++j)
                 if (ch.getVal(j) != population[i].getVal(j))
                     masks.push_back(j);
