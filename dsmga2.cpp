@@ -1118,7 +1118,7 @@ void DSMGA2::increaseOne () {
     for (auto i : idx){
         Chromosome chromo = population[i];
         if (chromo.getFitness() > ch.getFitness())
-        {   list<size_t> masks;
+        {   list<int> masks;
             for (int j = 0; j < ell; ++j)
                 if (ch.getVal(j) != population[i].getVal(j))
                     masks.push_back(j);
