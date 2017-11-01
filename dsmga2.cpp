@@ -398,6 +398,7 @@ bool DSMGA2::restrictedMixing(Chromosome& ch, int pos) {
 bool DSMGA2::restrictedMixing(Chromosome& ch) {
 
     int r = myRand.uniformInt(0, ell-1);
+    
     return restrictedMixing(ch, r);
 
 }
@@ -689,7 +690,7 @@ void DSMGA2::mixing() {
         for (int i=0; i<nCurrent; ++i) {
             if (population[orderN[i]].count > 1) 
                 population[orderN[i]].GHC();
-            if (restrictedMixing(population[orderN[i]])) ADD = false;
+//            if (restrictedMixing(population[orderN[i]])) ADD = false;
         }
 
         int sum = 0;
@@ -1064,6 +1065,7 @@ void DSMGA2::increaseOne () {
         ch.GHC();
     } while (isInOrigP(ch) || isInP(ch));
 
+
     delete []one;
 
     //} while (isInP(ch) || ch.hasSeen());
@@ -1098,6 +1100,35 @@ void DSMGA2::increaseOne () {
         fastCounting[i].init(nCurrent);
         orig_fc[i].init(nOrig);
     }
+
+// Restricted Mixing
+    double distance[nCurrent-1];
+    vector<int> idx(nCurrent-1);
+    for (int i = 0; i < nCurrent-1; ++i)
+    {
+        distance[i] = 0.0;
+        idx[i] = i;
+        for (int j = 0; j < ell; ++j)
+            distance[i] += (ch.getVal(j) != population[i].getVal(j)) ? successCount[i][j] : 0.0;
+    }
+
+    sort(idx.begin(), idx.end(), [&distance](int a, int b) { return distance[a] < distance[b]; });
+    printf("%d\n", idx[0]);
+
+    for (auto i : idx){
+        Chromosome chromo = population[i];
+        if (chromo.getFitness() > ch.getFitness())
+        {   list<size_t> masks;
+            for (int j = 0; j < ell; ++j)
+                if (ch.getVal(j) != population[i].getVal(j))
+                    masks.push_back(j);
+            bool taken = restrictedMixing(population[nCurrent-1], masks);
+        }
+    }
+
+    
+
+
     
 /*
             bool temp = SELECTION;
