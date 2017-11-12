@@ -34,6 +34,7 @@ public:
         layer = 0;
         gene = NULL;
         countFlipped = NULL;
+        improveValue = c.improveValue;
         init();
         bm_history = c.bm_history;
         *this = c;
@@ -82,6 +83,7 @@ public:
         if (getVal(index) == val) return;
 
         ++(countFlipped[index]);
+        improveValue = -1;
         count++;
         justGHC = false;
         setValF(index, val);
@@ -112,6 +114,7 @@ public:
     void flip (int index) {
         assert (index >= 0 && index < length);
 
+        improveValue = -1;
         ++(countFlipped[index]);
         int q = quotientLong(index);
         int r = remainderLong(index);
@@ -129,6 +132,7 @@ public:
 
     /** real evaluator */
     double evaluate ();
+    double countCloseness ();
 
     bool isEvaluated () const;
 
