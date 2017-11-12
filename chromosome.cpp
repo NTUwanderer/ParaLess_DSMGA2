@@ -16,8 +16,8 @@ Chromosome::Chromosome () {
     layer = 0;
     count = 0;
     gene = NULL;
-	countFlipped = NULL;
-	improveValue = 0.0;
+    countFlipped = NULL;
+    improveValue = 0.0;
     init ();
 }
 
@@ -39,8 +39,8 @@ void Chromosome::init () {
         delete []countFlipped;
 
     countFlipped = new int [length];
-	for (int i = 0; i < length; ++i)
-		countFlipped[i] = 0;
+    for (int i = 0; i < length; ++i)
+        countFlipped[i] = 0;
 
     layer = 0;
     count = 0;
@@ -61,8 +61,8 @@ void Chromosome::init0 () {
         delete []countFlipped;
 
     countFlipped = new int [length];
-	for (int i = 0; i < length; ++i)
-		countFlipped[i] = 0;
+    for (int i = 0; i < length; ++i)
+        countFlipped[i] = 0;
 
     key = 0;
     layer = 0;
@@ -81,8 +81,8 @@ void Chromosome::initR () {
         delete []countFlipped;
 
     countFlipped = new int [length];
-	for (int i = 0; i < length; ++i)
-		countFlipped[i] = 0;
+    for (int i = 0; i < length; ++i)
+        countFlipped[i] = 0;
 
     key = 0;
     for (int i=0; i<length; ++i) {
@@ -257,9 +257,9 @@ Chromosome& Chromosome::operator= (const Chromosome& c) {
     justGHC = c.justGHC;
 
     memcpy(gene, c.gene, sizeof(long) * lengthLong);
-	memcpy(countFlipped, c.countFlipped, sizeof(int) * length);
+    memcpy(countFlipped, c.countFlipped, sizeof(int) * length);
 
-	bm_history = c.bm_history;
+    bm_history = c.bm_history;
     return *this;
 }
 

@@ -32,9 +32,10 @@ public:
     Chromosome (const Chromosome& c) {
         count = 0;
         layer = 0;
-		gene = NULL;
+        gene = NULL;
+        countFlipped = NULL;
         init();
-		bm_history = c.bm_history;
+        bm_history = c.bm_history;
         *this = c;
     }
 
@@ -80,7 +81,7 @@ public:
 
         if (getVal(index) == val) return;
 
-		++(countFlipped[index]);
+        ++(countFlipped[index]);
         count++;
         justGHC = false;
         setValF(index, val);
@@ -111,7 +112,7 @@ public:
     void flip (int index) {
         assert (index >= 0 && index < length);
 
-		++(countFlipped[index]);
+        ++(countFlipped[index]);
         int q = quotientLong(index);
         int r = remainderLong(index);
 
@@ -121,10 +122,10 @@ public:
         evaluated = false;
     }
 
-	void resetCountFlipped () {
-		for (int i = 0; i < length; ++i)
-			countFlipped[i] = 0;
-	}
+    void resetCountFlipped () {
+        for (int i = 0; i < length; ++i)
+            countFlipped[i] = 0;
+    }
 
     /** real evaluator */
     double evaluate ();
@@ -164,9 +165,9 @@ public:
     static bool hit;
     static unordered_map<unsigned long, double> cache;
 
-	vector<char> bm_history;
-	int* countFlipped;
-	double improveValue;
+    vector<char> bm_history;
+    int* countFlipped;
+    double improveValue;
 protected:
 
     unsigned long *gene;
