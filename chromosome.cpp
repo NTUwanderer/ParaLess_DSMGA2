@@ -4,6 +4,7 @@
 
 #include <cstdio>
 #include <cstring>
+#include <math.h>
 #include "spin-glass.h"
 #include "chromosome.h"
 #include "nk-wa.h"
@@ -17,7 +18,7 @@ Chromosome::Chromosome () {
     count = 0;
     gene = NULL;
     countFlipped = NULL;
-    improveValue = 0.0;
+    improveValue = -1;
     init ();
 }
 
@@ -169,6 +170,16 @@ double Chromosome::evaluate () {
 
 }
 
+double Chromosome::countCloseness () {
+    if (improveValue >= 0)
+        return improveValue;
+
+    improveValue = length;
+    for (int i = 0; i < length; ++i)
+        improveValue -= pow (2.0, countFlipped[i]); 
+
+    return improveValue;
+}
 
 
 double
