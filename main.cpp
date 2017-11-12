@@ -38,7 +38,8 @@ main (int argc, char *argv[]) {
     }
 
     int ell = atoi (argv[1]); // problem size
-    int nInitial = (int)(4*(log(ell)/log(2.71828))+1); // initial population size
+    int nInitial = 0;
+    //int nInitial = (int)(4*(log(ell)/log(2.71828))+1); // initial population size
     //int nInitial = (int)(10*(log(ell)/log(2.71828))+2); // initial population size
     //int nInitial = (int) 1; // initial population size
     //int nInitial = (int) 2; // initial population size

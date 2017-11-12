@@ -202,7 +202,7 @@ void DSMGA2::showStatistics () {
     printf ("Gen:%d  N:%d  Fitness:(Max/Mean/Min):%f/%f/%f ",
             generation, nCurrent, stFitness.getMax (), stFitness.getMean (),
             stFitness.getMin ());
-    printf ("best chromosome:");
+    printf ("best chromosome:\n");
     population[bestIndex].printOut();
     printf ("\n");
 
@@ -590,26 +590,11 @@ size_t DSMGA2::findSize(Chromosome& ch, list<int>& mask, Chromosome& ch2) const 
 
 void DSMGA2::mixing() {
 
-
-    //if (nCurrent == 2 || nCurrent == 4 || nCurrent == 8 ||
-    //        nCurrent == 16 || nCurrent == 32 || nCurrent == 64 ||
-    //        nCurrent == 128 || nCurrent == 256 || nCurrent == 512 ||
-    //        nCurrent ==1024 || nCurrent == 2048) {
-    //
-    //if (nCurrent % 1 == 0) {
-    if (SELECTION)
-        selection();
-    //* really learn model
-    buildFastCounting();
-    buildGraph();
-
-    for (int i=0; i<ell; ++i)
-        findClique(i, masks[i]);
-
-
     //bool ADD;
     //int timer = 0;
     //bool second = false;
+
+    increaseOne();
     if (SELECTION)
         selection();
     // really learn model
@@ -626,81 +611,6 @@ void DSMGA2::mixing() {
         bool taken = restrictedMixing(population[nCurrent-1], pos);
         if (taken && population[nCurrent-1].getFitness() > prevFitness) break;
     }
-
-    /*
-    do {
-
-
-        //if (++timer % 5 == 0) {
-        if (SELECTION)
-            selection();
-        // really learn model
-        buildFastCounting();
-        buildGraph();
-        for (int i=0; i<ell; ++i)
-            findClique(i, masks[i]);
-        //}
-        
-
-        ADD = true;
-
-
-        int *old = new int[nCurrent];
-        for (int i=0; i<nCurrent; ++i)
-            old[i] = population[i].layer;
-
-        //if (generation != 0) NEW = true;
-
-        for (int i=0; i<nCurrent; ++i) {
-            if (population[orderN[i]].count > 1) 
-                population[orderN[i]].GHC();
-            if (restrictedMixing(population[orderN[i]])) ADD = false;
-        }
-
-        int sum = 0;
-        for (int i=0; i<nCurrent; ++i) 
-            if (population[i].layer > old[i])
-                ++sum;
-
-        if (2*sum < nCurrent) {
-
-            ADD = true;
-            double maxF = -INF;
-            int bestIndex=0;
-            genOrderN();
-            for (int i=0; i<nCurrent; ++i)
-                if (maxF < population[orderN[i]].getFitness()) {
-                    maxF = population[orderN[i]].getFitness();
-                    bestIndex = orderN[i];
-                }
-
-            population[bestIndex].GHC();
-            if (population[bestIndex].getFitness() > maxF)
-                ADD = false;
-            else
-                ADD = true;
-            
-            if (!second) {
-                ADD = false;
-                second = true;
-                for (int i=0; i<nCurrent; ++i)
-                    population[i].GHC();
-            }
-            else {
-                ADD = true;
-            }
-        }
-        else {
-           //second = false;
-           ADD = false;
-        }
-
-        delete []old;
-
-    } while (!ADD);
-    */
-
-    increaseOne();
 
 }
 
@@ -994,6 +904,7 @@ void DSMGA2::tournamentSelection () {
 void DSMGA2::increaseOne () {
 
 
+    /*
     double max = -INF;
     int bestIndex = 0;
 
@@ -1029,6 +940,7 @@ void DSMGA2::increaseOne () {
     } while (isInOrigP(ch) || isInP(ch));
 
     delete []one;
+    */
 
     //} while (isInP(ch) || ch.hasSeen());
 
@@ -1043,6 +955,11 @@ void DSMGA2::increaseOne () {
         }
     } while (!isInP(ch) && !ch.hasSeen());
     */
+    Chromosome ch;
+    do {
+        ch.initR();
+        ch.GHC();
+    } while (isInP(ch));
 
     ++nCurrent;
     ++nOrig;
