@@ -16,12 +16,15 @@ Chromosome::Chromosome () {
     layer = 0;
     count = 0;
     gene = NULL;
+	countFlipped = NULL;
+	improveValue = 0.0;
     init ();
 }
 
 
 Chromosome::~Chromosome () {
     if (gene != NULL) delete []gene;
+    if (countFlipped != NULL) delete []countFlipped;
 }
 
 void Chromosome::init () {
@@ -31,6 +34,13 @@ void Chromosome::init () {
 
     gene = new unsigned long [lengthLong];
     gene[lengthLong-1] = 0;
+
+    if (countFlipped != NULL)
+        delete []countFlipped;
+
+    countFlipped = new int [length];
+	for (int i = 0; i < length; ++i)
+		countFlipped[i] = 0;
 
     layer = 0;
     count = 0;
@@ -47,6 +57,13 @@ void Chromosome::init0 () {
     for (int i=0; i<lengthLong; ++i)
         gene[i] = 0;
 
+    if (countFlipped != NULL)
+        delete []countFlipped;
+
+    countFlipped = new int [length];
+	for (int i = 0; i < length; ++i)
+		countFlipped[i] = 0;
+
     key = 0;
     layer = 0;
     evaluated = false;
@@ -59,6 +76,13 @@ void Chromosome::initR () {
 
     gene = new unsigned long [lengthLong];
     gene[lengthLong-1] = 0;
+
+    if (countFlipped != NULL)
+        delete []countFlipped;
+
+    countFlipped = new int [length];
+	for (int i = 0; i < length; ++i)
+		countFlipped[i] = 0;
 
     key = 0;
     for (int i=0; i<length; ++i) {
@@ -210,6 +234,7 @@ Chromosome& Chromosome::operator= (const Chromosome& c) {
     justGHC = c.justGHC;
 
     memcpy(gene, c.gene, sizeof(long) * lengthLong);
+	memcpy(countFlipped, c.countFlipped, sizeof(int) * length);
 
 	bm_history = c.bm_history;
     return *this;

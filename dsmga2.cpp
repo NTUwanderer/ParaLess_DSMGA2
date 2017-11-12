@@ -938,6 +938,7 @@ void DSMGA2::increaseOne () {
         //ch.setVal(i, myRand.flip((one[i]+1.0)/(double)(nCurrent+2.0))? 0:1);
         ch.GHC();
     } while (isInOrigP(ch) || isInP(ch));
+	ch.resetCountFlipped();
 
     delete []one;
     */
