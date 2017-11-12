@@ -185,7 +185,7 @@ bool DSMGA2::shouldTerminate () {
     /*
     if (stFitness.getMax() - 1e-10 <= stFitness.getMean() )
         termination = true;
-    	*/
+        */
 
     return termination;
 
@@ -402,11 +402,11 @@ bool DSMGA2::backMixing(Chromosome& source, list<int>& mask, Chromosome& des) {
         pHash[trial.getKey()] = trial.getFitness();
         real = trial;
         real.layer++;
-		real.bm_history.push_back('1');
+        real.bm_history.push_back('1');
         return true;
     }
 
-	real.bm_history.push_back('0');
+    real.bm_history.push_back('0');
     return false;
 
 }
@@ -439,7 +439,7 @@ bool DSMGA2::backMixingE(Chromosome& source, list<int>& mask, Chromosome& des) {
         EQ = false;
         real = trial;
         real.layer++;
-		real.bm_history.push_back('1');
+        real.bm_history.push_back('1');
         return true;
     }
 
@@ -449,11 +449,11 @@ bool DSMGA2::backMixingE(Chromosome& source, list<int>& mask, Chromosome& des) {
 
         real = trial;
         //real.layer++;
-		real.bm_history.push_back('2');
+        real.bm_history.push_back('2');
         return true;
     }
 
-	real.bm_history.push_back('0');
+    real.bm_history.push_back('0');
     return false;
 
 }
@@ -489,7 +489,7 @@ bool DSMGA2::restrictedMixing(Chromosome& ch, list<int>& mask) {
             ch = trial;
             ch.layer++;
 
-			ch.bm_history.push_back('A');
+            ch.bm_history.push_back('A');
         }
         else {
             if (trial.getFitness() >= ch.getFitness()) {
@@ -499,7 +499,7 @@ bool DSMGA2::restrictedMixing(Chromosome& ch, list<int>& mask) {
                 taken = true;
                 ch = trial;
                 //ch.layer++;
-				ch.bm_history.push_back('B');
+                ch.bm_history.push_back('B');
             }
         }
 
@@ -1012,7 +1012,7 @@ void DSMGA2::increaseOne () {
         //ch.setVal(i, myRand.flip((one[i]+1.0)/(double)(nCurrent+2.0))? 0:1);
         ch.GHC();
     } while (isInOrigP(ch) || isInP(ch));
-	ch.resetCountFlipped();
+    ch.resetCountFlipped();
 
     delete []one;
 
