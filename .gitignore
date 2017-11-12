@@ -1,4 +1,13 @@
 *.o
 *.swp
 DSMGA2
+genZobrist
 history
+SAT
+SPIN
+MK
+NK
+FTRAP
+CYC
+run.sh
+tempFile

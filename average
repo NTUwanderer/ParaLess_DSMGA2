@@ -15,7 +15,7 @@ total2=0
 
 awk '{ total1 += $2; total2 += $2*$2; count++ } END { print "NFE:", total1/count, sqrt(total2/count - total1*total1/count/count) }' tempFile
 
-grep Popu $DIR/$ELL-* > tempFile
+grep Popu: $DIR/$ELL-* > tempFile
 
 count=0
 total1=0
