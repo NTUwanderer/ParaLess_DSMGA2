@@ -342,24 +342,25 @@ bool DSMGA2::restrictedMixing(Chromosome& ch, int pos) {
     EQ = true;
     //if (taken && mask.size()<log(nCurrent)/log(2)) {
     if (taken) {
-
-        genOrderN();
+        Chromosome temp_ch = ch;
 
         double sum = 0;
         if (!NOBM) {
             for (int i=0; i<nCurrent-1; ++i) {
-                //if (2*population[orderN[i]].count > ell) continue;
-
-                bool bm = false;
+                int bm = 0;
                 if (EQ)
-                    bm = backMixingE(ch, mask, population[orderN[i]]);
+                    bm = backMixingE(temp_ch, mask, population[i]);
                 else
-                    bm = backMixing(ch, mask, population[orderN[i]]);
+                    bm = backMixing(temp_ch, mask, population[i]);
 
-                if (bm) ++sum;
+                if (bm == 1) ++sum;
+                else if (bm == 2) {
+                    decreaseOne(i);
+                    --i;
+                }
             }
 
-            if (!NOHIS) BMhistory.push_back(BMRecord(ch, mask, EQ, (double)sum/(double)nCurrent));
+            if (!NOHIS) BMhistory.push_back(BMRecord(temp_ch, mask, EQ, (double)sum/(double)nCurrent));
         }
     }
 
@@ -374,7 +375,7 @@ bool DSMGA2::restrictedMixing(Chromosome& ch) {
 
 }
 
-bool DSMGA2::backMixing(Chromosome& source, list<int>& mask, Chromosome& des) {
+int DSMGA2::backMixing(Chromosome& source, list<int>& mask, Chromosome& des) {
 
     Chromosome trial = des;
 
@@ -395,22 +396,26 @@ bool DSMGA2::backMixing(Chromosome& source, list<int>& mask, Chromosome& des) {
         }
     }
 
+    if (!(trial == des) && isInP(trial))
+        return 2;
 
-    if (trial.getFitness() > real.getFitness()) {
+    double fitness = isInP(trial) ? pHash[trial.getKey()] : trial.getFitness();
+
+    if (fitness > real.getFitness()) {
         pHash.erase(real.getKey());
         pHash[trial.getKey()] = trial.getFitness();
         real = trial;
         real.layer++;
         real.bm_history.push_back('1');
-        return true;
+        return 1;
     }
 
     real.bm_history.push_back('0');
-    return false;
+    return 0;
 
 }
 
-bool DSMGA2::backMixingE(Chromosome& source, list<int>& mask, Chromosome& des) {
+int DSMGA2::backMixingE(Chromosome& source, list<int>& mask, Chromosome& des) {
 
     Chromosome trial = des;
 
@@ -431,7 +436,12 @@ bool DSMGA2::backMixingE(Chromosome& source, list<int>& mask, Chromosome& des) {
         }
     }
 
-    if (trial.getFitness() > real.getFitness()) {
+    if (!(trial == des) && isInP(trial))
+        return 2;
+
+    double fitness = isInP(trial) ? pHash[trial.getKey()] : trial.getFitness();
+
+    if (fitness > real.getFitness()) {
         pHash.erase(real.getKey());
         pHash[trial.getKey()] = trial.getFitness();
 
@@ -439,21 +449,21 @@ bool DSMGA2::backMixingE(Chromosome& source, list<int>& mask, Chromosome& des) {
         real = trial;
         real.layer++;
         real.bm_history.push_back('1');
-        return true;
+        return 1;
     }
 
-    if (trial.getFitness() >= real.getFitness()) {
+    if (fitness >= real.getFitness()) {
         pHash.erase(real.getKey());
         pHash[trial.getKey()] = trial.getFitness();
 
         real = trial;
         //real.layer++;
         real.bm_history.push_back('2');
-        return true;
+        return 1;
     }
 
     real.bm_history.push_back('0');
-    return false;
+    return 0;
 
 }
 
@@ -610,7 +620,7 @@ void DSMGA2::mixing() {
     for (int i=0; i<ell; ++i) {
         int pos = orderELL[i];
         double prevFitness = population[nCurrent-1].getFitness();
-        bool taken = restrictedMixing(population[nCurrent-1], pos);
+        bool taken = restrictedMixing(population.back(), pos);
         if (taken && population[nCurrent-1].getFitness() > prevFitness) break;
     }
 
@@ -905,44 +915,61 @@ void DSMGA2::tournamentSelection () {
 
 void DSMGA2::increaseOne () {
 
-    Chromosome ch;
+    bool success;
+    int count = 0;
     do {
-        ch.initR();
-        ch.GHC();
-    } while (isInP(ch));
+        ++count;
 
-    ++nCurrent;
-    ++nOrig;
-
-    population.push_back(ch);
-
-    orig_popu.push_back(population[nCurrent-1]);
-
-    pHash[population[nCurrent-1].getKey()] = population[nCurrent-1].getFitness();
-    pHashOrig[population[nCurrent-1].getKey()] = population[nCurrent-1].getFitness();
-
-    selectionIndex.emplace_back();
-    orig_selectionIndex.emplace_back();
-    orderN.push_back(nCurrent-1);
-
-    for (int i = 0; i < ell; i++) {
-        fastCounting[i].init(nCurrent);
-        orig_fc[i].init(nOrig);
-    }
+        Chromosome ch;
+        do {
+            ch.initR();
+            ch.GHC();
+        } while (isInP(ch));
     
-    int size = BMhistory.size();
-    int *rrr = new int[size];
-    myRand.uniformArray(rrr, size, 0, size-1);
-    for (int i=0; i<size; ++i) {
-        //int r = i;
-        int r = rrr[i];
-        if (BMhistory[r].eq)
-            backMixingE(BMhistory[r].pattern, BMhistory[r].mask, population[nCurrent-1]);
-        else
-            backMixing(BMhistory[r].pattern, BMhistory[r].mask, population[nCurrent-1]);
-    }
-
-    delete []rrr;
+        ++nCurrent;
+        ++nOrig;
+    
+        population.push_back(ch);
+    
+        orig_popu.push_back(population[nCurrent-1]);
+    
+        pHash[population[nCurrent-1].getKey()] = population[nCurrent-1].getFitness();
+        pHashOrig[population[nCurrent-1].getKey()] = population[nCurrent-1].getFitness();
+    
+        selectionIndex.emplace_back();
+        orig_selectionIndex.emplace_back();
+        orderN.push_back(nCurrent-1);
+    
+        for (int i = 0; i < ell; i++) {
+            fastCounting[i].init(nCurrent);
+            orig_fc[i].init(nOrig);
+        }
+        
+        int size = BMhistory.size();
+        int *rrr = new int[size];
+        int bm;
+        success = true;
+        myRand.uniformArray(rrr, size, 0, size-1);
+        for (int i=0; i<size; ++i) {
+            //int r = i;
+            int r = rrr[i];
+            if (BMhistory[r].eq)
+                bm = backMixingE(BMhistory[r].pattern, BMhistory[r].mask, population.back());
+            else
+                bm = backMixing(BMhistory[r].pattern, BMhistory[r].mask, population.back());
+    
+            if (bm == 2) {
+                success = false;
+                decreaseOne(nCurrent-1);
+                break;
+            }
+            
+        }
+    
+        delete []rrr;
+    } while (success == false);
+    cout << "BMsize: " << BMhistory.size() << ", ";
+    cout << "Final count: " << count << endl;
 
 }
 
