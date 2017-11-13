@@ -173,7 +173,7 @@ double Chromosome::evaluate () {
 
 }
 
-double Chromosome::countCloseness () {
+double Chromosome::countCloseness () const {
     if (improveValue >= 0)
         return improveValue;
 
