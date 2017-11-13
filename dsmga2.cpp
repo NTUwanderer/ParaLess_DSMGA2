@@ -916,10 +916,7 @@ void DSMGA2::tournamentSelection () {
 void DSMGA2::increaseOne () {
 
     bool success;
-    int count = 0;
     do {
-        ++count;
-
         Chromosome ch;
         do {
             ch.initR();
@@ -968,8 +965,6 @@ void DSMGA2::increaseOne () {
     
         delete []rrr;
     } while (success == false);
-    cout << "BMsize: " << BMhistory.size() << ", ";
-    cout << "Final count: " << count << endl;
 
 }
 
