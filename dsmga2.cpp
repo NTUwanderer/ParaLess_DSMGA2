@@ -232,10 +232,11 @@ void DSMGA2::buildOrigFastCounting() {
 void DSMGA2::buildFastCounting() {
 
     if (SELECTION) {
-        for (int i = 0; i < nCurrent; i++)
+        for (int i = 0; i < nCurrent; i++) {
             for (int j = 0; j < ell; j++) {
                 fastCounting[j].setVal(i, population[selectionIndex[i]].getVal(j));
             }
+        }
 
     } else {
         for (int i = 0; i < nCurrent; i++) {
@@ -523,7 +524,8 @@ size_t DSMGA2::findOrigSize(Chromosome& ch, list<int>& mask) const {
 
     DLLA candidate(nOrig);
     for (int i=0; i<nOrig; ++i)
-        candidate.insert(i);
+        if (population[i].countCloseness() >= ch.countCloseness())
+            candidate.insert(i);
 
     size_t size = 0;
     for (list<int>::iterator it = mask.begin(); it != mask.end(); ++it) {
@@ -978,7 +980,6 @@ void DSMGA2::tournamentSelection () {
 
 void DSMGA2::increaseOne () {
 
-
     double max = -INF;
     int bestIndex = 0;
 
@@ -1029,6 +1030,13 @@ void DSMGA2::increaseOne () {
         }
     } while (!isInP(ch) && !ch.hasSeen());
     */
+    /*
+    Chromosome ch;
+    do {
+        ch.initR();
+        ch.GHC();
+    } while (isInP(ch));
+    */
 
     ++nCurrent;
     ++nOrig;
@@ -1049,39 +1057,6 @@ void DSMGA2::increaseOne () {
         orig_fc[i].init(nOrig);
     }
     
-/*
-            bool temp = SELECTION;
-            SELECTION = false;
-            OrigSelection();
-            buildOrigFastCounting();
-            buildOrigGraph();
-            SELECTION = temp;
-
-
-            for (int i=0; i<ell; ++i)
-                findOrigClique(i, orig_masks[i]);
-
-
-            genOrderELL();
-            int ssize = nCurrent;
-            if (ssize > ell/2) ssize = ell/2;
-            for (int i=0; i<ssize; ++i) {
-
-                int r = orderELL[i];
-
-                list<int> mask = orig_masks[r];
-                int size = findOrigSize(population[nCurrent-1], mask);
-                if (size > (size_t)ell/2)
-                    size = ell/2;
-
-                // prune mask to exactly size
-                while (mask.size() > size)
-                    mask.pop_back();
-
-                bool taken = restrictedMixing(population[nCurrent-1], mask);
-            }
-  */     
-
     int size = BMhistory.size();
     int *rrr = new int[size];
     myRand.uniformArray(rrr, size, 0, size-1);
@@ -1094,75 +1069,8 @@ void DSMGA2::increaseOne () {
             backMixing(BMhistory[r].pattern, BMhistory[r].mask, population[nCurrent-1]);
     }
 
-    //population[nCurrent-1].GHC();
-
     delete []rrr;
 
-    /*
-    //cout << "(" << BMhistory.size() << "," << nCurrent << ")" << endl;
-    int size = BMhistory.size();
-    //int size = (BMhistory.size()+1)/2;
-    //int size = ell/2;
-    if (size>BMhistory.size()) size = BMhistory.size();
-    //int size = nCurrent/2;
-    int *rrr = new int[size];
-    myRand.uniformArray(rrr, size, 0, size-1);
-
-    //std::sort(BMhistory.begin(), BMhistory.end());
-
-
-    //cout << "=========================" << endl;
-    //population[nCurrent-1].printOut();
-    //cout << "-------------------------" << endl;
-
-
-    for (int i = 0; i<size; ++i) {
-
-        //int r = rrr[i];
-        //int r = rrr[i] + size - 1;
-        //if (r<0) r=0;
-        //if (r>BMhistory.size()-1) r=BMhistory.size()-1;
-        //cout << r << endl;
-        //cout << BMhistory.size() << endl;
-        int r = size - i - 1;
-        //int r = i;
-        //cout << BMhistory[r].mask.size() << " ";
-
-
-        EQ = true;
-        bool taken;
-        if (BMhistory[r].eq)
-            taken = backMixingE(BMhistory[r].pattern, BMhistory[r].mask, population[nCurrent-1]);
-        else
-            taken = backMixing(BMhistory[r].pattern, BMhistory[r].mask, population[nCurrent-1]);
-
-
-        if (!EQ)
-            BMhistory[r].eq = false;
-
-        //double alpha = 1.0/(double)nCurrent;
-        double alpha = 0.1;
-        if (taken)
-            BMhistory[r].rate = (1-alpha)*BMhistory[r].rate + alpha;
-        else
-            BMhistory[r].rate = (1-alpha)*BMhistory[r].rate;
-    }
-
-    delete []rrr;
-    */
-
-
-    /*
-            for (int i=0; i<nCurrent; ++i) {
-                for (int j=i+1; j<nCurrent; ++j) {
-                    int dist = population[i].getHammingDistance(population[j]);
-                    if (dist == 0) {
-                        decreaseOne(j);
-                        --j;
-                    }
-                }
-            }
-     */
 }
 
 
@@ -1173,3 +1081,4 @@ void DSMGA2::decreaseOne(int index) {
     population.erase(population.begin()+index);
 
 }
+

@@ -131,7 +131,7 @@ public:
 
     /** real evaluator */
     double evaluate ();
-    double countCloseness ();
+    double countCloseness () const;
 
     bool isEvaluated () const;
 
@@ -169,7 +169,7 @@ public:
 
     vector<char> bm_history;
     int* countFlipped;
-    double improveValue;
+    mutable double improveValue;
 protected:
 
     unsigned long *gene;
