@@ -37,8 +37,8 @@ public:
     bool restrictedMixing(Chromosome&);
     bool restrictedMixing(Chromosome& ch, list<int>& mask);
     bool restrictedMixing(Chromosome& ch, int pos);
-    bool backMixing(Chromosome& source, list<int>& mask, Chromosome& des);
-    bool backMixingE(Chromosome& source, list<int>& mask, Chromosome& des);
+    int backMixing(Chromosome& source, list<int>& mask, Chromosome& des);
+    int backMixingE(Chromosome& source, list<int>& mask, Chromosome& des);
 
     bool shouldTerminate ();
 
