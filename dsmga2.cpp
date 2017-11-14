@@ -402,6 +402,8 @@ int DSMGA2::backMixing(Chromosome& source, list<int>& mask, Chromosome& des) {
     double fitness = isInP(trial) ? pHash[trial.getKey()] : trial.getFitness();
 
     if (fitness > real.getFitness()) {
+        for (list<int>::iterator it = mask.begin(); it != mask.end(); ++it)
+            trial.addCountFlipped(*it);
         pHash.erase(real.getKey());
         pHash[trial.getKey()] = trial.getFitness();
         real = trial;
@@ -442,6 +444,8 @@ int DSMGA2::backMixingE(Chromosome& source, list<int>& mask, Chromosome& des) {
     double fitness = isInP(trial) ? pHash[trial.getKey()] : trial.getFitness();
 
     if (fitness > real.getFitness()) {
+        for (list<int>::iterator it = mask.begin(); it != mask.end(); ++it)
+            trial.addCountFlipped(*it);
         pHash.erase(real.getKey());
         pHash[trial.getKey()] = trial.getFitness();
 
@@ -491,6 +495,8 @@ bool DSMGA2::restrictedMixing(Chromosome& ch, list<int>& mask) {
             break;
 
         if (trial.getFitness() > ch.getFitness()) {
+            for (list<int>::iterator it = mask.begin(); it != mask.end(); ++it)
+                trial.addCountFlipped(*it);
             pHash.erase(ch.getKey());
             pHash[trial.getKey()] = trial.getFitness();
 
