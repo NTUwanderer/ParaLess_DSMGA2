@@ -81,8 +81,6 @@ public:
 
         if (getVal(index) == val) return;
 
-        ++(countFlipped[index]);
-        improveValue = -1;
         count++;
         justGHC = false;
         setValF(index, val);
@@ -113,8 +111,6 @@ public:
     void flip (int index) {
         assert (index >= 0 && index < length);
 
-        improveValue = -1;
-        ++(countFlipped[index]);
         int q = quotientLong(index);
         int r = remainderLong(index);
 
@@ -127,6 +123,11 @@ public:
     void resetCountFlipped () {
         for (int i = 0; i < length; ++i)
             countFlipped[i] = 0;
+    }
+
+    void addCountFlipped (int index) {
+        improveValue = -1;
+        ++(countFlipped[index]);
     }
 
     /** real evaluator */
