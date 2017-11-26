@@ -133,6 +133,9 @@ double Chromosome::evaluate () {
         case SAT:
             accum = satFitness();
             break;
+        case FIX_SPIN:
+            accum = fixSpinGlass();
+            break;
         default:
             accum = mkTrap(1, 0.8);
             break;
@@ -158,6 +161,26 @@ Chromosome::spinGlass () const {
             x[i] = 1;
         else
             x[i] = -1;
+
+    result = spinGlassValue(x, &mySpinGlassParams);
+
+    delete []x;
+
+    return result;
+}
+
+double
+Chromosome::fixSpinGlass () const {
+
+    int *x = new int[length + 1];
+    double result;
+
+    x[0] = 1;
+    for (int i=0; i<length; i++)
+        if (getVal(i) == 1)
+            x[i + 1] = 1;
+        else
+            x[i + 1] = -1;
 
     result = spinGlassValue(x, &mySpinGlassParams);
 
@@ -358,6 +381,9 @@ double Chromosome::getMaxFitness () const {
             break;
         case SAT:
             maxF = 0;
+            break;
+        case FIX_SPIN:
+            maxF = mySpinGlassParams.optimalValue;
             break;
         default:
             // Never converge

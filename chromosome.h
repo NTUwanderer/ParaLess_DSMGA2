@@ -23,7 +23,8 @@ public:
         CYCTRAP=3,
         NK=4,
         SPINGLASS=5,
-        SAT=6
+        SAT=6,
+        FIX_SPIN=7
     } function;
 
 
@@ -133,6 +134,7 @@ public:
     double cycTrap(double fHigh, double fLow) const;
     double fTrap () const;
     double spinGlass () const;
+    double fixSpinGlass () const;
     double nkFitness() const;
     double satFitness() const;
 

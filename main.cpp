@@ -33,6 +33,7 @@ main (int argc, char *argv[]) {
         printf ("     NK    :  4\n");
         printf ("     SPIN  :  5\n");
         printf ("     SAT   :  6\n");
+        printf (" FIX SPIN  :  7\n");
 
         return -1;
     }
@@ -88,6 +89,26 @@ main (int argc, char *argv[]) {
 
         printf("Loading: %s\n", filename);
         loadSAT(filename, &mySAT);
+    }
+    else if (fffff == 7) {
+
+        int side = (int)sqrt(ell+0.001);
+        char filename[200];
+        FILE *fp;
+        if (side <= 17) {
+            sprintf(filename, "../../SPIN/%dx%d/%d_%d.%d", side, side, side, ell, pNum);
+            printf("Loading: %s\n", filename);
+            fp = fopen(filename, "r");
+            loadSimonsSpinGlassInstance(fp, &mySpinGlassParams);
+            fclose(fp);
+        }
+        else {
+            sprintf(filename, "../../SPIN/%dx%d/s_%dx%d.%d", side, side, side, side, pNum);
+            printf("Loading: %s\n", filename);
+            fp = fopen(filename, "r");
+            loadSpinGlassInstance(fp, &mySpinGlassParams);
+            fclose(fp);
+        }
     }
 
     if (rand_seed != -1)  // time

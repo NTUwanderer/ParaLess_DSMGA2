@@ -28,7 +28,7 @@ DSMGA2::DSMGA2 (int n_ell, int n_nInitial, int n_maxGen, int n_maxFe, int fffff)
     NOBM = false;
 
     previousFitnessMean = -INF;
-    ell = n_ell;
+    ell = fffff == 7 ? n_ell - 1 : n_ell;
     nPrev = 0;
     nCurrent = n_nInitial;
     nOrig = nCurrent;
