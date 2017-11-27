@@ -57,6 +57,7 @@ public:
 
     bool isSteadyState ();
 
+    void printDist(string fileName) const;
 //protected:
 public:
 

@@ -143,6 +143,8 @@ main (int argc, char *argv[]) {
             stLSFE.record (Chromosome::lsnfe);
             stGen.record (usedGen);
             printf ("+");
+
+            ga.printDist("dist_sat.csv");
         }
 
         fflush (NULL);

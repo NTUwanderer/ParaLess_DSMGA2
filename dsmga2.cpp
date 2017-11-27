@@ -17,6 +17,7 @@
 #include "fastcounting.h"
 #include "statistics.h"
 
+#include "fstream"
 
 using namespace std;
 
@@ -978,5 +979,16 @@ void DSMGA2::decreaseOne(int index) {
     pHash.erase(population[index].getKey());
     population.erase(population.begin()+index);
 
+}
+
+void DSMGA2::printDist(string fileName) const {
+    
+    fstream distF (fileName.c_str(), fstream::out);
+    distF << "HammingDist, closeness\n";
+
+    for (int i = 0; i < nCurrent; ++i)
+        distF << population[i].getHammingDistance(population[bestIndex]) << ',' << population[i].countCloseness() << '\n';
+
+    distF.close();
 }
 
