@@ -179,7 +179,7 @@ double Chromosome::countCloseness () {
 
     improveValue = length;
     for (int i = 0; i < length; ++i)
-        improveValue -= pow (2.0, countFlipped[i]); 
+        improveValue -= pow (2.0, -countFlipped[i]); 
 
     return improveValue;
 }
