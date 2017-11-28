@@ -266,6 +266,7 @@ Chromosome& Chromosome::operator= (const Chromosome& c) {
     layer = c.layer;
     count = c.count;
     justGHC = c.justGHC;
+    improveValue = c.improveValue;
 
     memcpy(gene, c.gene, sizeof(long) * lengthLong);
     memcpy(countFlipped, c.countFlipped, sizeof(int) * length);
