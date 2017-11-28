@@ -402,7 +402,10 @@ int DSMGA2::backMixing(Chromosome& source, list<int>& mask, Chromosome& des) {
 
     double fitness = isInP(trial) ? pHash[trial.getKey()] : trial.getFitness();
 
-    if (!isInP(trial) && fitness > real.getFitness()) {
+    if (fitness > real.getFitness()) {
+        if (isInP(trial))
+            return 2;
+
         for (list<int>::iterator it = mask.begin(); it != mask.end(); ++it)
             trial.addCountFlipped(*it);
         pHash.erase(real.getKey());
@@ -441,7 +444,10 @@ int DSMGA2::backMixingE(Chromosome& source, list<int>& mask, Chromosome& des) {
 
     double fitness = isInP(trial) ? pHash[trial.getKey()] : trial.getFitness();
 
-    if (!isInP(trial) && fitness > real.getFitness()) {
+    if (fitness > real.getFitness()) {
+        if (isInP(trial))
+            return 2;
+
         for (list<int>::iterator it = mask.begin(); it != mask.end(); ++it)
             trial.addCountFlipped(*it);
         pHash.erase(real.getKey());
@@ -568,7 +574,7 @@ size_t DSMGA2::findSize(Chromosome& ch, list<int>& mask) const {
 
     DLLA candidate(nCurrent);
     for (int i=0; i<nOrig; ++i)
-        if (population[i].countCloseness() >= ch.countCloseness())
+        if (population[i].countCloseness() + Chromosome::length / 10 >= ch.countCloseness())
             candidate.insert(i);
 
     size_t size = 0;
