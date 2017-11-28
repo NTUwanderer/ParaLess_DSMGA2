@@ -122,6 +122,7 @@ public:
     }
 
     void resetCountFlipped () {
+        improveValue = -1;
         for (int i = 0; i < length; ++i)
             countFlipped[i] = 0;
     }
