@@ -536,7 +536,7 @@ size_t DSMGA2::findOrigSize(Chromosome& ch, list<int>& mask) const {
 
     DLLA candidate(nOrig);
     for (int i=0; i<nOrig; ++i)
-        if (population[i].countCloseness() >= ch.countCloseness())
+        if (orig_popu[i].countCloseness() >= ch.countCloseness() * 0.75 && orig_popu[i].countCloseness() <= ch.countCloseness() * 1.25)
             candidate.insert(i);
 
     size_t size = 0;
@@ -568,7 +568,7 @@ size_t DSMGA2::findSize(Chromosome& ch, list<int>& mask) const {
 
     DLLA candidate(nCurrent);
     for (int i=0; i<nCurrent; ++i)
-        if (population[i].countCloseness() >= ch.countCloseness())
+        if (population[i].countCloseness() >= ch.countCloseness() * 0.75 && population[i].countCloseness() <= ch.countCloseness() * 1.25)
             candidate.insert(i);
 
     size_t size = 0;
