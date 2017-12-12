@@ -50,7 +50,8 @@ main (int argc, char *argv[]) {
     int repeat = atoi (argv[5]); // how many time to repeat
     int display = atoi (argv[6]); // display each generation or not
     int rand_seed = atoi (argv[7]);  // rand seed
-    int pNum = (argc==9)? atoi (argv[8]):0;
+    int pNum = (argc>=9)? atoi (argv[8]):0;
+    string fileName = (argc>=10)? argv[9]:"dist_hist.csv";
 
 
     if (fffff == 4) {
@@ -144,7 +145,7 @@ main (int argc, char *argv[]) {
             stGen.record (usedGen);
             printf ("+");
 
-            ga.printDist("dist_sat.csv");
+            ga.printDist(fileName);
         }
 
         fflush (NULL);

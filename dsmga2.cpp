@@ -12,6 +12,7 @@
 #include <iterator>
 
 #include <iostream>
+#include <math.h>
 #include "chromosome.h"
 #include "dsmga2.h"
 #include "fastcounting.h"
@@ -86,6 +87,7 @@ DSMGA2::DSMGA2 (int n_ell, int n_nInitial, int n_maxGen, int n_maxFe, int fffff)
         double f = population[i].getFitness();
         pHash[population[i].getKey()] = f;
         pHashOrig[population[i].getKey()] = f;
+        addInHistPopu(population[i]);
     }
 }
 
@@ -300,6 +302,17 @@ int DSMGA2::countOne(int x) const {
     return n;
 }
 
+double DSMGA2::weightCountOne(int x) const {
+    double n = 0.0;
+    
+    for (int i=0; i<nCurrent; ++i) {
+        if (population[i].getVal(x))
+            n += importance[i];
+    }
+
+    return n;
+}
+
 
 int DSMGA2::countXOR(int x, int y) const {
 
@@ -319,6 +332,16 @@ int DSMGA2::countXOR(int x, int y) const {
     return n;
 }
 
+double DSMGA2::weightCountXOR(int x, int y) const {
+    double n = 0.0;
+    
+    for (int i=0; i<nCurrent; ++i) {
+        if (population[i].getVal(x) != population[i].getVal(y))
+            n += importance[i];
+    }
+
+    return n;
+}
 
 bool DSMGA2::restrictedMixing(Chromosome& ch, int pos) {
 
@@ -348,6 +371,9 @@ bool DSMGA2::restrictedMixing(Chromosome& ch, int pos) {
         double sum = 0;
         if (!NOBM) {
             for (int i=0; i<nCurrent-1; ++i) {
+                // if (population[i].countCloseness() < temp_ch.countCloseness())
+                //     continue;
+
                 int bm = 0;
                 if (EQ)
                     bm = backMixingE(temp_ch, mask, population[i]);
@@ -409,6 +435,7 @@ int DSMGA2::backMixing(Chromosome& source, list<int>& mask, Chromosome& des) {
         pHash[trial.getKey()] = trial.getFitness();
         real = trial;
         real.layer++;
+        addInHistPopu(real);
         real.bm_history.push_back('1');
         return 1;
     }
@@ -450,6 +477,7 @@ int DSMGA2::backMixingE(Chromosome& source, list<int>& mask, Chromosome& des) {
         EQ = false;
         real = trial;
         real.layer++;
+        addInHistPopu(real);
         real.bm_history.push_back('1');
         return 1;
     }
@@ -501,6 +529,7 @@ bool DSMGA2::restrictedMixing(Chromosome& ch, list<int>& mask) {
             taken = true;
             ch = trial;
             ch.layer++;
+            addInHistPopu(ch);
 
             ch.bm_history.push_back('A');
         }
@@ -616,6 +645,7 @@ void DSMGA2::mixing() {
         selection();
     // really learn model
     buildFastCounting();
+    resetImportance();
     buildGraph();
     for (int i=0; i<ell; ++i)
         findClique(i, masks[i]);
@@ -695,17 +725,17 @@ void DSMGA2::buildOrigGraph() {
 }
 void DSMGA2::buildGraph() {
 
-    int *one = new int [ell];
+    double *one = new double [ell];
     for (int i=0; i<ell; ++i) {
-        one[i] = countOne(i);
+        one[i] = weightCountOne(i);
     }
 
     for (int i=0; i<ell; ++i) {
 
         for (int j=i+1; j<ell; ++j) {
 
-            int n00, n01, n10, n11;
-            int nX =  countXOR(i, j);
+            double n00, n01, n10, n11;
+            double nX =  weightCountXOR(i, j);
 
             n11 = (one[i]+one[j]-nX)/2;
             n10 = one[i] - n11;
@@ -937,6 +967,7 @@ void DSMGA2::increaseOne () {
     
         pHash[population[nCurrent-1].getKey()] = population[nCurrent-1].getFitness();
         pHashOrig[population[nCurrent-1].getKey()] = population[nCurrent-1].getFitness();
+        addInHistPopu(population[nCurrent-1]);
     
         selectionIndex.emplace_back();
         orig_selectionIndex.emplace_back();
@@ -985,11 +1016,73 @@ void DSMGA2::decreaseOne(int index) {
 void DSMGA2::printDist(string fileName) const {
     
     fstream distF (fileName.c_str(), fstream::out);
-    distF << "HammingDist, closeness\n";
+    /*
+    for (int i = 0; i < hist_popu.size(); ++i) {
+        if (i != 0)
+            distF << ",";
+        distF << i << "H," << i << "C";
+    }
+    distF << "\n";
 
-    for (int i = 0; i < nCurrent; ++i)
-        distF << population[i].getHammingDistance(population[bestIndex]) << ',' << population[i].countCloseness() << '\n';
+    bool* empty = new bool[hist_popu.size()];
+    for (int i = 0; i < hist_popu.size(); ++i)
+        empty[i] = false;
+
+    int j = 0;
+    int countEmpty = 0;
+    while (countEmpty < hist_popu.size()) {
+        
+        for (int i = 0; i < hist_popu.size(); ++i) {
+            if (!empty[i] && j >= hist_popu[i].size()) {
+                empty[i] = true;
+                ++countEmpty;
+            }
+
+            if (empty[i]) {
+                distF << ",,";
+                continue;
+            }
+
+            distF << hist_popu[i][j].getHammingDistance(population[bestIndex]) << ',' << hist_popu[i][j].countCloseness() << ',';
+        }
+
+        distF << "\n";
+
+        ++j;
+    }
+    */
+
+    for (int i = hist_popu.size() - 1; i >= 0; --i) {
+        for (int j = 0; j < hist_popu[i].size(); ++j)
+            distF << hist_popu[i][j].getHammingDistance(population[bestIndex]) << ',' << hist_popu[i][j].countCloseness() << ',';
+        distF << "\n";
+    }
 
     distF.close();
+}
+
+void DSMGA2::resetImportance() {
+    importance.resize(nCurrent);
+    Statistics hammings;
+    vector<int> distances;
+    for (int i = 0; i < nCurrent; ++i) {
+        distances.push_back(population.back().getHammingDistance(population[i]));
+
+        hammings.record(distances.back());
+    }
+
+    double sum = 0.0;
+    for (int i=0; i<nCurrent; ++i) {
+        // importance[i] = exp(-pow(distances[i], 2) / (2 * hammings.getVariance()));
+        // importance[i] = pow(distances[i] + 1, -1);
+        importance[i] = ell - distances[i];
+        sum += importance[i];
+    }
+    
+    sum /= nCurrent;
+    for (int i = 0; i < nCurrent; ++i) {
+        importance[i] /= sum;
+    }
+
 }
 

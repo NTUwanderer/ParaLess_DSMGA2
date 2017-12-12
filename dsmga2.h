@@ -56,8 +56,15 @@ public:
     void showStatistics ();
 
     bool isSteadyState ();
+    void addInHistPopu(const Chromosome& c) {
+        while (c.layer >= hist_popu.size())
+            hist_popu.push_back(vector<Chromosome>());
+
+        hist_popu[c.layer].push_back(c);
+    }
 
     void printDist(string fileName) const;
+    void resetImportance();
 //protected:
 public:
 
@@ -93,8 +100,11 @@ public:
 
     vector<Chromosome> population;
     vector<Chromosome> orig_popu;
+    vector<vector<Chromosome> > hist_popu;
     FastCounting* fastCounting;
     FastCounting* orig_fc;
+
+    vector<double> importance;
 
     TriMatrix<double> graph;
     TriMatrix<double> orig_graph;
@@ -111,6 +121,8 @@ public:
     void buildFastCounting();
     int countXOR(int, int) const;
     int countOne(int) const;
+    double weightCountXOR(int, int) const;
+    double weightCountOne(int) const;
 
     void findOrigClique(int startNode, list<int>& result);
     void buildOrigFastCounting();

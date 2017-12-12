@@ -61,6 +61,11 @@ public:
         int result = 0;
         for (int i=0; i<lengthLong; ++i)
             result += myBD.getHammingDistance(gene[i], c.gene[i]);
+        
+        if (function == SPINGLASS) {
+            if (result > length / 2)
+                result = length - result;
+        }
         return result;
     }
 
