@@ -32,7 +32,7 @@ DSMGA2::DSMGA2 (int n_ell, int n_nInitial, int n_maxGen, int n_maxFe, int fffff)
     ell = fffff == 7 ? n_ell - 1 : n_ell;
     nPrev = 0;
     nCurrent = n_nInitial;
-    nOrig = nCurrent;
+    nOrig = 0;
 
     Chromosome::length = ell;
     Chromosome::lengthLong = quotientLong(ell)+1;
@@ -82,10 +82,9 @@ DSMGA2::DSMGA2 (int n_ell, int n_nInitial, int n_maxGen, int n_maxFe, int fffff)
     }
 
     for (int i=0; i < nCurrent; i++) {
-        orig_popu.push_back(population[i]);
         double f = population[i].getFitness();
         pHash[population[i].getKey()] = f;
-        pHashOrig[population[i].getKey()] = f;
+        // pHashOrig[population[i].getKey()] = f;
     }
 }
 
@@ -402,14 +401,20 @@ int DSMGA2::backMixing(Chromosome& source, list<int>& mask, Chromosome& des) {
 
     double fitness = isInP(trial) ? pHash[trial.getKey()] : trial.getFitness();
 
-    if (!isInP(trial) && fitness > real.getFitness()) {
+    if (!isInP(trial) && !isInOrigP(trial) && fitness > real.getFitness()) {
         for (list<int>::iterator it = mask.begin(); it != mask.end(); ++it)
             trial.addCountFlipped(*it);
+
+        orig_popu.push_back(real);
+        pHashOrig[real.getKey()] = real.getFitness();
+        ++nOrig;
+
         pHash.erase(real.getKey());
         pHash[trial.getKey()] = trial.getFitness();
         real = trial;
         real.layer++;
         real.bm_history.push_back('1');
+
         return 1;
     }
 
@@ -441,9 +446,14 @@ int DSMGA2::backMixingE(Chromosome& source, list<int>& mask, Chromosome& des) {
 
     double fitness = isInP(trial) ? pHash[trial.getKey()] : trial.getFitness();
 
-    if (!isInP(trial) && fitness > real.getFitness()) {
+    if (!isInP(trial) && !isInOrigP(trial) && fitness > real.getFitness()) {
         for (list<int>::iterator it = mask.begin(); it != mask.end(); ++it)
             trial.addCountFlipped(*it);
+
+        orig_popu.push_back(real);
+        pHashOrig[real.getKey()] = real.getFitness();
+        ++nOrig;
+
         pHash.erase(real.getKey());
         pHash[trial.getKey()] = trial.getFitness();
 
@@ -454,7 +464,11 @@ int DSMGA2::backMixingE(Chromosome& source, list<int>& mask, Chromosome& des) {
         return 1;
     }
 
-    if (!isInP(trial) && fitness >= real.getFitness()) {
+    if (!isInP(trial) && !isInOrigP(trial) && fitness >= real.getFitness()) {
+        orig_popu.push_back(real);
+        pHashOrig[real.getKey()] = real.getFitness();
+        ++nOrig;
+
         pHash.erase(real.getKey());
         pHash[trial.getKey()] = trial.getFitness();
 
@@ -610,15 +624,30 @@ void DSMGA2::mixing() {
     //bool ADD;
     //int timer = 0;
     //bool second = false;
+    cout << "Start of mixing" << endl;
 
+    for (int i = 0; i < ell; i++) {
+        fastCounting[i].init(nCurrent);
+        orig_fc[i].init(nOrig);
+    }
     increaseOne();
-    if (SELECTION)
+    if (SELECTION) {
         selection();
+        OrigSelection();
+    }
     // really learn model
+    for (int i = 0; i < ell; i++)
+        orig_fc[i].init(nOrig);
+    cout << 0 << endl;
     buildFastCounting();
+    cout << 1 << endl;
+    buildOrigFastCounting();
+    cout << 2 << endl;
     buildGraph();
+    cout << 3 << endl;
     for (int i=0; i<ell; ++i)
         findClique(i, masks[i]);
+    cout << 4 << endl;
 
     genOrderELL();
 
@@ -628,6 +657,7 @@ void DSMGA2::mixing() {
         bool taken = restrictedMixing(population.back(), pos);
         if (taken && population[nCurrent-1].getFitness() > prevFitness) break;
     }
+    cout << "End of mixing";
 
 }
 
@@ -697,7 +727,7 @@ void DSMGA2::buildGraph() {
 
     int *one = new int [ell];
     for (int i=0; i<ell; ++i) {
-        one[i] = countOne(i);
+        one[i] = countOne(i) + countOrigOne(i);
     }
 
     for (int i=0; i<ell; ++i) {
@@ -705,17 +735,17 @@ void DSMGA2::buildGraph() {
         for (int j=i+1; j<ell; ++j) {
 
             int n00, n01, n10, n11;
-            int nX =  countXOR(i, j);
+            int nX =  countXOR(i, j) + countOrigXOR(i, j);
 
             n11 = (one[i]+one[j]-nX)/2;
             n10 = one[i] - n11;
             n01 = one[j] - n11;
-            n00 = nCurrent - n01 - n10 - n11;
+            n00 = nCurrent + nOrig - n01 - n10 - n11;
 
-            double p00 = (double)n00/(double)nCurrent;
-            double p01 = (double)n01/(double)nCurrent;
-            double p10 = (double)n10/(double)nCurrent;
-            double p11 = (double)n11/(double)nCurrent;
+            double p00 = (double)n00/(double)(nCurrent + nOrig);
+            double p01 = (double)n01/(double)(nCurrent + nOrig);
+            double p10 = (double)n10/(double)(nCurrent + nOrig);
+            double p11 = (double)n11/(double)(nCurrent + nOrig);
 
             double linkage;
             linkage = computeMI(p00,p01,p10,p11);
@@ -929,23 +959,25 @@ void DSMGA2::increaseOne () {
         } while (isInP(ch));
     
         ++nCurrent;
-        ++nOrig;
+        // ++nOrig;
     
         population.push_back(ch);
     
-        orig_popu.push_back(population[nCurrent-1]);
+        // orig_popu.push_back(population[nCurrent-1]);
     
         pHash[population[nCurrent-1].getKey()] = population[nCurrent-1].getFitness();
-        pHashOrig[population[nCurrent-1].getKey()] = population[nCurrent-1].getFitness();
+        // pHashOrig[population[nCurrent-1].getKey()] = population[nCurrent-1].getFitness();
     
         selectionIndex.emplace_back();
         orig_selectionIndex.emplace_back();
         orderN.push_back(nCurrent-1);
     
+        /*
         for (int i = 0; i < ell; i++) {
             fastCounting[i].init(nCurrent);
             orig_fc[i].init(nOrig);
         }
+        */
         
         int size = BMhistory.size();
         int *rrr = new int[size];
