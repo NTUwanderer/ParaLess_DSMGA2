@@ -624,13 +624,14 @@ void DSMGA2::mixing() {
     //bool ADD;
     //int timer = 0;
     //bool second = false;
-    cout << "Start of mixing" << endl;
 
+    increaseOne();
     for (int i = 0; i < ell; i++) {
         fastCounting[i].init(nCurrent);
         orig_fc[i].init(nOrig);
     }
-    increaseOne();
+	selectionIndex.resize(nCurrent);
+	orig_selectionIndex.resize(nOrig);
     if (SELECTION) {
         selection();
         OrigSelection();
@@ -638,16 +639,11 @@ void DSMGA2::mixing() {
     // really learn model
     for (int i = 0; i < ell; i++)
         orig_fc[i].init(nOrig);
-    cout << 0 << endl;
     buildFastCounting();
-    cout << 1 << endl;
     buildOrigFastCounting();
-    cout << 2 << endl;
     buildGraph();
-    cout << 3 << endl;
     for (int i=0; i<ell; ++i)
         findClique(i, masks[i]);
-    cout << 4 << endl;
 
     genOrderELL();
 
@@ -657,7 +653,6 @@ void DSMGA2::mixing() {
         bool taken = restrictedMixing(population.back(), pos);
         if (taken && population[nCurrent-1].getFitness() > prevFitness) break;
     }
-    cout << "End of mixing";
 
 }
 
@@ -893,6 +888,8 @@ void DSMGA2::selection () {
 
 // tournamentSelection without replacement
 void DSMGA2::OrigSelection () {
+	if (orig_selectionIndex.size() != nOrig)
+		cout << "Error!" << endl;
     int i, j;
 
     int randArray[selectionPressure * nOrig];
@@ -969,7 +966,7 @@ void DSMGA2::increaseOne () {
         // pHashOrig[population[nCurrent-1].getKey()] = population[nCurrent-1].getFitness();
     
         selectionIndex.emplace_back();
-        orig_selectionIndex.emplace_back();
+        // orig_selectionIndex.emplace_back();
         orderN.push_back(nCurrent-1);
     
         /*
