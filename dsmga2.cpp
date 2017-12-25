@@ -51,6 +51,7 @@ DSMGA2::DSMGA2 (int n_ell, int n_nInitial, int n_maxGen, int n_maxFe, int fffff)
 
     bestIndex = 0;
     masks = new list<int>[ell];
+    linkValues = new list<double>[ell];
     orig_masks = new list<int>[ell];
     orderELL = new int[ell];
 
@@ -91,6 +92,7 @@ DSMGA2::DSMGA2 (int n_ell, int n_nInitial, int n_maxGen, int n_maxFe, int fffff)
 
 DSMGA2::~DSMGA2 () {
     delete []masks;
+    delete []linkValues;
     delete []orig_masks;
     delete []orderELL;
     delete []fastCounting;
@@ -644,7 +646,7 @@ void DSMGA2::mixing() {
     buildOrigFastCounting();
     buildGraph();
     for (int i=0; i<ell; ++i)
-        findClique(i, masks[i]);
+        findClique(i, masks[i], linkValues[i]);
 
     genOrderELL();
 
@@ -834,6 +836,55 @@ void DSMGA2::findClique(int startNode, list<int>& result) {
                 index = *iter;
             }
         }
+
+        rest.erase(index);
+        result.push_back(index);
+
+        for (DLLA::iterator iter = rest.begin(); iter != rest.end(); ++iter)
+            connection[*iter] += graph(index, *iter);
+    }
+
+
+    delete []connection;
+
+}
+
+void DSMGA2::findClique(int startNode, list<int>& result, list<double>& linkValue) {
+
+    result.clear();
+    linkValue.clear();
+
+    DLLA rest(ell);
+    genOrderELL();
+    for (int i=0; i<ell; ++i) {
+        if (orderELL[i]==startNode)
+            result.push_back(orderELL[i]);
+        else
+            rest.insert(orderELL[i]);
+    }
+
+    double *connection = new double[ell];
+
+    for (DLLA::iterator iter = rest.begin(); iter != rest.end(); ++iter)
+        connection[*iter] = graph(startNode, *iter);
+
+    double sum = 0;
+    int numAdd = 0, counter = 0;
+    while (!rest.isEmpty()) {
+        counter += 1;
+        numAdd += counter;
+
+        double max = -INF;
+        int index = -1;
+        for (DLLA::iterator iter = rest.begin(); iter != rest.end(); ++iter) {
+            if (max < connection[*iter]) {
+                max = connection[*iter];
+                index = *iter;
+            }
+        }
+
+        sum += max;
+        linkValue.push_back(sum / numAdd);
 
         rest.erase(index);
         result.push_back(index);

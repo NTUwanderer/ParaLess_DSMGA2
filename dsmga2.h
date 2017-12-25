@@ -79,6 +79,7 @@ public:
     vector<BMRecord> BMhistory;
 
     list<int> *masks;
+    list<double> *linkValues;
     list<int> *orig_masks;
     vector<int> selectionIndex;
     vector<int> orig_selectionIndex;
@@ -108,6 +109,7 @@ public:
 
 
     void findClique(int startNode, list<int>& result);
+    void findClique(int startNode, list<int>& result, list<double>& linkValue);
     void buildFastCounting();
     int countXOR(int, int) const;
     int countOne(int) const;
