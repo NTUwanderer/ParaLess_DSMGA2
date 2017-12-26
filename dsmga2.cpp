@@ -12,6 +12,8 @@
 #include <iterator>
 
 #include <iostream>
+#include <queue>
+
 #include "chromosome.h"
 #include "dsmga2.h"
 #include "fastcounting.h"
@@ -21,6 +23,19 @@
 
 using namespace std;
 
+class myComp {
+public:
+    myComp(vector<double> *linkValues, int *lengths) {
+        _linkValues = linkValues;
+        _lengths = lengths;
+    }
+    bool operator() (const int& lhs, const int&rhs) {
+        return _linkValues[lhs][_lengths[lhs]-1] < _linkValues[rhs][_lengths[rhs]-1];
+    }
+
+    vector<double> *_linkValues;
+    int *_lengths;
+};
 
 DSMGA2::DSMGA2 (int n_ell, int n_nInitial, int n_maxGen, int n_maxFe, int fffff) {
 
@@ -51,7 +66,7 @@ DSMGA2::DSMGA2 (int n_ell, int n_nInitial, int n_maxGen, int n_maxFe, int fffff)
 
     bestIndex = 0;
     masks = new list<int>[ell];
-    linkValues = new list<double>[ell];
+    linkValues = new vector<double>[ell];
     orig_masks = new list<int>[ell];
     orderELL = new int[ell];
 
@@ -371,9 +386,82 @@ bool DSMGA2::restrictedMixing(Chromosome& ch, int pos) {
 }
 
 bool DSMGA2::restrictedMixing(Chromosome& ch) {
+    int* maxSizes = new int[ell];
 
-    int r = myRand.uniformInt(0, ell-1);
-    return restrictedMixing(ch, r);
+    for (int i=0; i<ell; ++i) {
+        list<int> mask = masks[i];
+        size_t size;
+        if (NEW)
+            size = findSize(ch, mask, population[nCurrent-1]);
+        else
+            size = findSize(ch, mask);
+
+        if (size > (size_t)ell/2)
+            size = ell/2;
+
+        maxSizes[i] = size;
+    }
+
+    typedef priority_queue<int, vector<int>, myComp> mypg_type;
+
+    int* lengths = new int[ell];
+    for (int i=0; i<ell; ++i)
+        lengths[i] = 1;
+
+    mypg_type myQueue (myComp(linkValues, lengths));
+
+    for (int i=0; i<ell; ++i)
+        myQueue.push(i);
+
+    while (!myQueue.empty()) {
+        int index = myQueue.top();
+
+        list<int> mask = masks[index];
+        bool taken = restrictedMixing(ch, mask, lengths[index]);
+
+        myQueue.pop();
+
+        if (lengths[index]+1 < maxSizes[index] && !taken) {
+            ++(lengths[index]);
+            myQueue.push(index);
+        } else {
+            lengths[index] = ell;
+        }
+        
+        EQ = true;
+        if (taken) {
+            Chromosome temp_ch = ch;
+
+            double sum = 0;
+            if (!NOBM) {
+                for (int i=0; i<nCurrent-1; ++i) {
+                    int bm = 0;
+                    if (EQ)
+                        bm = backMixingE(temp_ch, mask, population[i]);
+                    else
+                        bm = backMixing(temp_ch, mask, population[i]);
+
+                    if (bm == 1) ++sum;
+                    else if (bm == 2) {
+                        decreaseOne(i);
+                        --i;
+                    }
+                }
+
+                if (!NOHIS) BMhistory.push_back(BMRecord(temp_ch, mask, EQ, (double)sum/(double)nCurrent));
+
+            }
+
+        }
+    }
+
+    delete[] lengths;
+    delete[] maxSizes;
+
+
+    return false;
+    // int r = myRand.uniformInt(0, ell-1);
+    // return restrictedMixing(ch, r);
 
 }
 
@@ -485,6 +573,57 @@ int DSMGA2::backMixingE(Chromosome& source, list<int>& mask, Chromosome& des) {
 
 }
 
+bool DSMGA2::restrictedMixing(Chromosome& ch, list<int>& mask, int size) {
+
+    bool taken = false;
+
+    size_t _size = 1;
+    Chromosome trial = ch;
+
+    for (list<int>::iterator it = mask.begin(); it != mask.end(); ++it) {
+
+        trial.flip(*it);
+
+        ++_size;
+        if (_size > size) break;
+    }
+
+
+    if (isInP(trial))
+        return false;
+
+    if (trial.getFitness() > ch.getFitness()) {
+        for (list<int>::iterator it = mask.begin(); it != mask.end(); ++it)
+            trial.addCountFlipped(*it);
+        pHash.erase(ch.getKey());
+        pHash[trial.getKey()] = trial.getFitness();
+
+        taken = true;
+        ch = trial;
+        ch.layer++;
+
+        ch.bm_history.push_back('A');
+    }
+    else {
+        if (trial.getFitness() >= ch.getFitness()) {
+            pHash.erase(ch.getKey());
+            pHash[trial.getKey()] = trial.getFitness();
+
+            taken = true;
+            ch = trial;
+            //ch.layer++;
+            ch.bm_history.push_back('B');
+        }
+    }
+
+    if (taken) {
+        while (mask.size() > size)
+            mask.pop_back();
+    }
+
+    return taken;
+
+}
 
 bool DSMGA2::restrictedMixing(Chromosome& ch, list<int>& mask) {
 
@@ -648,14 +787,17 @@ void DSMGA2::mixing() {
     for (int i=0; i<ell; ++i)
         findClique(i, masks[i], linkValues[i]);
 
+    restrictedMixing(population.back());
     genOrderELL();
 
+    /*
     for (int i=0; i<ell; ++i) {
         int pos = orderELL[i];
         double prevFitness = population[nCurrent-1].getFitness();
         bool taken = restrictedMixing(population.back(), pos);
         if (taken && population[nCurrent-1].getFitness() > prevFitness) break;
     }
+    */
 
 }
 
@@ -849,7 +991,7 @@ void DSMGA2::findClique(int startNode, list<int>& result) {
 
 }
 
-void DSMGA2::findClique(int startNode, list<int>& result, list<double>& linkValue) {
+void DSMGA2::findClique(int startNode, list<int>& result, vector<double>& linkValue) {
 
     result.clear();
     linkValue.clear();

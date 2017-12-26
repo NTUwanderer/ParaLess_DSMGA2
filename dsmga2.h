@@ -36,6 +36,7 @@ public:
     bool OrigRM(Chromosome&);
     bool restrictedMixing(Chromosome&);
     bool restrictedMixing(Chromosome& ch, list<int>& mask);
+    bool restrictedMixing(Chromosome& ch, list<int>& mask, int size);
     bool restrictedMixing(Chromosome& ch, int pos);
     int backMixing(Chromosome& source, list<int>& mask, Chromosome& des);
     int backMixingE(Chromosome& source, list<int>& mask, Chromosome& des);
@@ -79,7 +80,7 @@ public:
     vector<BMRecord> BMhistory;
 
     list<int> *masks;
-    list<double> *linkValues;
+    vector<double> *linkValues;
     list<int> *orig_masks;
     vector<int> selectionIndex;
     vector<int> orig_selectionIndex;
@@ -109,7 +110,7 @@ public:
 
 
     void findClique(int startNode, list<int>& result);
-    void findClique(int startNode, list<int>& result, list<double>& linkValue);
+    void findClique(int startNode, list<int>& result, vector<double>& linkValue);
     void buildFastCounting();
     int countXOR(int, int) const;
     int countOne(int) const;
