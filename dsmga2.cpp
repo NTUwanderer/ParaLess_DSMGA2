@@ -23,18 +23,44 @@
 
 using namespace std;
 
+class Pos {
+public:
+    Pos(int x, int y, double value) {
+        _x = x;
+        _y = y;
+        _value = value;
+    }
+
+    bool operator < (const Pos& p) const {
+        return _value < p._value;
+        //return Pos::_linkValues[_x][_y] < _linkValues[p._x][p._y];
+    }
+
+    bool operator > (const Pos& p) const {
+        return _value > p._value;
+        //return _linkValues[_x][_y] > _linkValues[p._x][p._y];
+    }
+
+    bool operator == (const Pos& p) const {
+        return _value == p._value;
+        //return _linkValues[_x][_y] == _linkValues[p._x][p._y];
+    }
+
+    int _x;
+    int _y;
+    double _value;
+};
+
 class myComp {
 public:
-    myComp(vector<double> *linkValues, int *lengths) {
+    myComp(vector<double> *linkValues) {
         _linkValues = linkValues;
-        _lengths = lengths;
     }
-    bool operator() (const int& lhs, const int&rhs) {
-        return _linkValues[lhs][_lengths[lhs]-1] < _linkValues[rhs][_lengths[rhs]-1];
+    bool operator() (const Pos& pos1, const Pos& pos2) {
+        return _linkValues[pos1._x][pos1._y] < _linkValues[pos2._x][pos2._y];
     }
 
     vector<double> *_linkValues;
-    int *_lengths;
 };
 
 DSMGA2::DSMGA2 (int n_ell, int n_nInitial, int n_maxGen, int n_maxFe, int fffff) {
@@ -386,6 +412,8 @@ bool DSMGA2::restrictedMixing(Chromosome& ch, int pos) {
 }
 
 bool DSMGA2::restrictedMixing(Chromosome& ch) {
+    bool* used = new bool[ell];
+    int* usedSize = new int[ell];
     int* maxSizes = new int[ell];
 
     for (int i=0; i<ell; ++i) {
@@ -400,36 +428,38 @@ bool DSMGA2::restrictedMixing(Chromosome& ch) {
             size = ell/2;
 
         maxSizes[i] = size;
+        used[i] = false;
+        usedSize[i] = 0;
     }
 
-    typedef priority_queue<int, vector<int>, myComp> mypg_type;
+    // typedef priority_queue<Pos, vector<Pos>, myComp> mypg_type;
+    // Pos::_linkValues = linkValues;
 
-    int* lengths = new int[ell];
+    priority_queue<Pos> myQueue;
+
+    // mypg_type myQueue (myComp(linkValues));
+
     for (int i=0; i<ell; ++i)
-        lengths[i] = 1;
-
-    mypg_type myQueue (myComp(linkValues, lengths));
-
-    for (int i=0; i<ell; ++i)
-        myQueue.push(i);
+        for (int j=0; j<maxSizes[i]-1; ++j)
+            myQueue.push(Pos(i, j, linkValues[i][j]));
 
     while (!myQueue.empty()) {
-        int index = myQueue.top();
-
-        list<int> mask = masks[index];
-        bool taken = restrictedMixing(ch, mask, lengths[index]);
-
+        Pos pos = myQueue.top();
         myQueue.pop();
 
-        if (lengths[index]+1 < maxSizes[index] && !taken) {
-            ++(lengths[index]);
-            myQueue.push(index);
-        } else {
-            lengths[index] = ell;
-        }
-        
+        // if (used[pos._x])
+        //     continue;
+        if (usedSize[pos._x] < pos._y)
+            continue;
+
+        usedSize[pos._x] = pos._y;
+
+        list<int> mask = masks[pos._x];
+        bool taken = restrictedMixing(ch, mask, pos._y+1);
+
         EQ = true;
         if (taken) {
+            used[pos._x] = true;
             Chromosome temp_ch = ch;
 
             double sum = 0;
@@ -451,13 +481,14 @@ bool DSMGA2::restrictedMixing(Chromosome& ch) {
                 if (!NOHIS) BMhistory.push_back(BMRecord(temp_ch, mask, EQ, (double)sum/(double)nCurrent));
 
             }
+            break;
 
         }
     }
 
-    delete[] lengths;
+    delete[] used;
     delete[] maxSizes;
-
+    delete[] usedSize;
 
     return false;
     // int r = myRand.uniformInt(0, ell-1);
