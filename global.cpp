@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <climits>
 #include <cfloat>
+#include <string>
 #include "myrand.h"
 #include "statistics.h"
 #include "doublelinkedlistarray.h"
@@ -54,6 +55,8 @@ BitwiseDistance myBD;
 SpinGlassParams mySpinGlassParams;
 NKWAProblem nkwa;
 SATinstance mySAT;
+
+string solution;
 
 
 void outputErrMsg(const char *errMsg) {

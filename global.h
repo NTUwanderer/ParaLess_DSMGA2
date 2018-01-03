@@ -10,6 +10,7 @@
 #define NDEBUG // for assert
 #include <cassert>
 #include <cmath>
+#include <string>
 
 #include "myrand.h"
 #include "bitwisedistance.h"
@@ -55,6 +56,7 @@ extern MyRand myRand;
 extern BitwiseDistance myBD;
 extern SpinGlassParams mySpinGlassParams;
 extern SATinstance mySAT;
+extern string solution;
 
 extern NKWAProblem nkwa;
 

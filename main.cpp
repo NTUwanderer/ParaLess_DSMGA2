@@ -50,7 +50,8 @@ main (int argc, char *argv[]) {
     int repeat = atoi (argv[5]); // how many time to repeat
     int display = atoi (argv[6]); // display each generation or not
     int rand_seed = atoi (argv[7]);  // rand seed
-    int pNum = (argc==9)? atoi (argv[8]):0;
+    int pNum = (argc >= 9)? atoi (argv[8]):0;
+    int getSol = true;
 
 
     if (fffff == 4) {
@@ -66,7 +67,7 @@ main (int argc, char *argv[]) {
     else if (fffff == 5) {
 
         int side = (int)sqrt(ell+0.001);
-        char filename[200];
+        char filename[200], sol[200];
         FILE *fp;
         if (side <= 17) {
             sprintf(filename, "../../SPIN/%dx%d/%d_%d.%d", side, side, side, ell, pNum);
@@ -82,11 +83,54 @@ main (int argc, char *argv[]) {
             loadSpinGlassInstance(fp, &mySpinGlassParams);
             fclose(fp);
         }
+
+        if (getSol) {
+            sprintf(sol, "./SPIN/%d-%03d", ell, pNum);
+            string line, prev_line; 
+            ifstream input(sol);
+
+            if(!input) {
+                cout << "Fail to open file: " <<  sol << endl;
+                exit(0);
+            }
+            while (getline(input, line)){
+                if (line[0] == '+')
+                    break;
+                prev_line = line;
+            }
+            size_t found = prev_line.find_last_of(':');
+            solution = prev_line.substr(found+1);
+
+            input.close();
+        }
+
     }
     else if (fffff == 6) {
 
-        char filename[200];
+        char filename[200], sol[200];
         sprintf(filename, "../../SAT/uf%d/uf%d-0%d.cnf", ell, ell, pNum);
+        sprintf(sol, "./SAT/%d-%03d", ell, pNum);
+        
+        // Read solution
+        if (getSol) {
+            string line, prev_line; 
+            ifstream input(sol);
+
+            if(!input) {
+                cout << "Fail to open file: " <<  sol << endl;
+                exit(0);
+            }
+            while (getline(input, line)){
+                if (line[0] == '+')
+                    break;
+                prev_line = line;
+            }
+            size_t found = prev_line.find_last_of(':');
+            solution = prev_line.substr(found+1);
+
+            input.close();
+        }
+        
 
         printf("Loading: %s\n", filename);
         loadSAT(filename, &mySAT);

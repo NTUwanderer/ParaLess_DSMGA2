@@ -9,6 +9,8 @@
 #include "global.h"
 #include "nk-wa.h"
 #include <vector>
+#include <cstdlib>
+#include <string>
 
 using namespace std;
 
@@ -54,6 +56,7 @@ public:
     void init ();
     void init0 ();
     void initR ();
+    void initS (string);
 
     bool tryFlipping (int index);
 
@@ -182,6 +185,5 @@ protected:
     unsigned long long key;
 
 };
-
 
 #endif

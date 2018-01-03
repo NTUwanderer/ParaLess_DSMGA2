@@ -3,6 +3,7 @@
  ***************************************************************************/
 
 #include <cstdio>
+#include <iostream>
 #include <cstring>
 #include <math.h>
 #include "spin-glass.h"
@@ -92,6 +93,32 @@ void Chromosome::initR () {
         setValF(i, val);
         if (val == 1)
             key ^= zKey[i];
+    }
+
+    layer = 0;
+    evaluated = false;
+}
+
+void Chromosome::initS (string s) {
+
+    if (gene != NULL)
+        delete []gene;
+
+    gene = new unsigned long [lengthLong];
+    gene[lengthLong-1] = 0;
+
+    if (countFlipped != NULL)
+        delete []countFlipped;
+
+    countFlipped = new int [length];
+    for (int i = 0; i < length; ++i)
+        countFlipped[i] = 0;
+
+    key = 0;
+    for (int i=0; i<length; ++i) {
+
+        int val = s[i] - '0';
+        setValF(i, val);
     }
 
     layer = 0;

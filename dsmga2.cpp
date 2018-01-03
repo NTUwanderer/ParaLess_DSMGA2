@@ -21,6 +21,7 @@
 
 using namespace std;
 
+Chromosome solu;
 
 DSMGA2::DSMGA2 (int n_ell, int n_nInitial, int n_maxGen, int n_maxFe, int fffff) {
 
@@ -41,6 +42,8 @@ DSMGA2::DSMGA2 (int n_ell, int n_nInitial, int n_maxGen, int n_maxFe, int fffff)
     Chromosome::lsnfe = 0;
     Chromosome::hitnfe = 0;
     Chromosome::hit = false;
+
+    solu.initS(solution);
 
     selectionPressure = 2;
     maxGen = n_maxGen;
@@ -348,6 +351,13 @@ bool DSMGA2::restrictedMixing(Chromosome& ch, int pos) {
         double sum = 0;
         if (!NOBM) {
             for (int i=0; i<nCurrent-1; ++i) {
+                auto popu_dis = population[i].getHammingDistance(solu);  
+                auto temp_dis = temp_ch.getHammingDistance(solu); 
+                popu_dis = (popu_dis > ell - popu_dis)? ell - popu_dis : popu_dis;
+                temp_dis = (temp_dis > ell - temp_dis)? ell - temp_dis : temp_dis;
+                if (popu_dis > temp_dis)
+                    continue;
+
                 int bm = 0;
                 if (EQ)
                     bm = backMixingE(temp_ch, mask, population[i]);
@@ -536,7 +546,7 @@ size_t DSMGA2::findOrigSize(Chromosome& ch, list<int>& mask) const {
 
     DLLA candidate(nOrig);
     for (int i=0; i<nOrig; ++i)
-        if (orig_popu[i].countCloseness() >= ch.countCloseness() * 0.75 && orig_popu[i].countCloseness() <= ch.countCloseness() * 1.25)
+        if (orig_popu[i].getHammingDistance(solu) <= ch.getHammingDistance(solu))
             candidate.insert(i);
 
     size_t size = 0;
@@ -568,7 +578,7 @@ size_t DSMGA2::findSize(Chromosome& ch, list<int>& mask) const {
 
     DLLA candidate(nCurrent);
     for (int i=0; i<nCurrent; ++i)
-        if (population[i].countCloseness() >= ch.countCloseness() * 0.75 && population[i].countCloseness() <= ch.countCloseness() * 1.25)
+        if (population[i].getHammingDistance(solu) <= ch.getHammingDistance(solu))
             candidate.insert(i);
 
     size_t size = 0;
@@ -612,6 +622,8 @@ void DSMGA2::mixing() {
     //bool second = false;
 
     increaseOne();
+    bool stop = false;;
+    while (!stop) {
     if (SELECTION)
         selection();
     // really learn model
@@ -622,12 +634,16 @@ void DSMGA2::mixing() {
 
     genOrderELL();
 
+    stop = true;
+
     for (int i=0; i<ell; ++i) {
         int pos = orderELL[i];
         double prevFitness = population[nCurrent-1].getFitness();
         bool taken = restrictedMixing(population.back(), pos);
-        if (taken && population[nCurrent-1].getFitness() > prevFitness) break;
+        if (taken && population[nCurrent-1].getFitness() > prevFitness) { stop = false; break; }
     }
+    }
+
 
 }
 
