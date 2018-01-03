@@ -443,6 +443,7 @@ bool DSMGA2::restrictedMixing(Chromosome& ch) {
         for (int j=0; j<maxSizes[i]-1; ++j)
             myQueue.push(Pos(i, j, linkValues[i][j]));
 
+    int countSuccess = 0;
     while (!myQueue.empty()) {
         Pos pos = myQueue.top();
         myQueue.pop();
@@ -452,14 +453,14 @@ bool DSMGA2::restrictedMixing(Chromosome& ch) {
         if (usedSize[pos._x] < pos._y)
             continue;
 
-        usedSize[pos._x] = pos._y;
-
         list<int> mask = masks[pos._x];
         bool taken = restrictedMixing(ch, mask, pos._y+1);
 
         EQ = true;
         if (taken) {
+            ++countSuccess;
             used[pos._x] = true;
+            usedSize[pos._x] = pos._y;
             Chromosome temp_ch = ch;
 
             double sum = 0;
@@ -481,7 +482,51 @@ bool DSMGA2::restrictedMixing(Chromosome& ch) {
                 if (!NOHIS) BMhistory.push_back(BMRecord(temp_ch, mask, EQ, (double)sum/(double)nCurrent));
 
             }
-            break;
+
+            myQueue = priority_queue<Pos>();
+
+            for (int i = 0; i < ell; i++) {
+                fastCounting[i].init(nCurrent);
+                orig_fc[i].init(nOrig);
+            }
+	        selectionIndex.resize(nCurrent);
+	        orig_selectionIndex.resize(nOrig);
+            if (SELECTION) {
+                selection();
+                OrigSelection();
+            }
+            // really learn model
+            for (int i = 0; i < ell; i++)
+                orig_fc[i].init(nOrig);
+            buildFastCounting();
+            buildOrigFastCounting();
+            buildGraph();
+            for (int i=0; i<ell; ++i)
+                findClique(i, masks[i], linkValues[i]);
+
+            for (int i=0; i<ell; ++i) {
+                list<int> mask = masks[i];
+                size_t size = 0;
+
+                if (used[i]) {
+                    maxSizes[i] = size;
+                    continue;
+                }
+
+                if (NEW)
+                    size = findSize(ch, mask, population[nCurrent-1]);
+                else
+                    size = findSize(ch, mask);
+
+                if (size > (size_t)ell/2)
+                    size = ell/2;
+
+                maxSizes[i] = size;
+            }
+
+            for (int i=0; i<ell; ++i)
+                for (int j=0; j<maxSizes[i]-1; ++j)
+                    myQueue.push(Pos(i, j, linkValues[i][j]));
 
         }
     }
