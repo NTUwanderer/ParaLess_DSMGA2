@@ -57,6 +57,12 @@ public:
 
     bool isSteadyState ();
 
+    void checkNfe () const {
+        if (initNfe + initBMNfe + rmNfe + bmNfe != Chromosome::nfe) {
+            printf ("Not match nfe\n");
+        }
+    }
+
 //protected:
 public:
 
@@ -89,6 +95,12 @@ public:
     int repeat;
     int generation;
     int bestIndex;
+
+    int lastNfe;
+    int initNfe;
+    int initBMNfe;
+    int rmNfe;
+    int bmNfe;
 
     vector<Chromosome> population;
     vector<Chromosome> orig_popu;

@@ -123,6 +123,7 @@ main (int argc, char *argv[]) {
     int failNum = 0;
 
 
+    Statistics stInit, stInitBM, stRM, stBM;
 
     for (i = 0; i < repeat; i++) {
 
@@ -143,6 +144,11 @@ main (int argc, char *argv[]) {
             stLSFE.record (Chromosome::lsnfe);
             stGen.record (usedGen);
             printf ("+");
+
+            stInit.record (ga.initNfe);
+            stInitBM.record (ga.initBMNfe);
+            stRM.record (ga.rmNfe);
+            stBM.record (ga.bmNfe);
         }
 
         fflush (NULL);
@@ -187,6 +193,10 @@ main (int argc, char *argv[]) {
     printf ("NFE: %f\n", stFE.getMean());
     printf ("Popu: %f\n", stN.getMean());
 
+    printf ("initBMNFE: %f\n", stInitBM.getMean());
+    printf ("rmNFE: %f\n", stRM.getMean());
+    printf ("bmNFE: %f\n", stBM.getMean());
+    printf ("sumNFE: %f\n", stLSFE.getMean() + stInitBM.getMean() + stRM.getMean() + stBM.getMean());
 
     return EXIT_SUCCESS;
 }
