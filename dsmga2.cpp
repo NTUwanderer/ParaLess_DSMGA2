@@ -83,6 +83,12 @@ DSMGA2::DSMGA2 (int n_ell, int n_nInitial, int n_maxGen, int n_maxFe, int fffff)
     Chromosome::hitnfe = 0;
     Chromosome::hit = false;
 
+    lastNfe = Chromosome::nfe;
+    initNfe = 0;
+    initBMNfe = 0;
+    rmNfe = 0;
+    bmNfe = 0;
+
     selectionPressure = 2;
     maxGen = n_maxGen;
     maxFe = n_maxFe;
@@ -128,6 +134,10 @@ DSMGA2::DSMGA2 (int n_ell, int n_nInitial, int n_maxGen, int n_maxFe, int fffff)
         pHash[population[i].getKey()] = f;
         // pHashOrig[population[i].getKey()] = f;
     }
+
+    initNfe += Chromosome::nfe - lastNfe;
+    lastNfe = Chromosome::nfe;
+    checkNfe();
 }
 
 
@@ -379,8 +389,14 @@ bool DSMGA2::restrictedMixing(Chromosome& ch, int pos) {
     while (mask.size() > size)
         mask.pop_back();
 
+    if (Chromosome::nfe != lastNfe)
+        printf ("Miscalculate: before rm\n");
 
     bool taken = restrictedMixing(ch, mask);
+
+    rmNfe += Chromosome::nfe - lastNfe;
+    lastNfe = Chromosome::nfe;
+    checkNfe();
 
     EQ = true;
     //if (taken && mask.size()<log(nCurrent)/log(2)) {
@@ -407,6 +423,9 @@ bool DSMGA2::restrictedMixing(Chromosome& ch, int pos) {
         }
     }
 
+    bmNfe += Chromosome::nfe - lastNfe;
+    lastNfe = Chromosome::nfe;
+    checkNfe();
 
     return taken;
 }
@@ -454,7 +473,14 @@ bool DSMGA2::restrictedMixing(Chromosome& ch) {
             continue;
 
         list<int> mask = masks[pos._x];
+        if (Chromosome::nfe != lastNfe)
+            printf ("Miscalculate: before rm\n");
+
         bool taken = restrictedMixing(ch, mask, pos._y+1);
+
+        rmNfe += Chromosome::nfe - lastNfe;
+        lastNfe = Chromosome::nfe;
+        checkNfe();
 
         EQ = true;
         if (taken) {
@@ -529,6 +555,10 @@ bool DSMGA2::restrictedMixing(Chromosome& ch) {
                     myQueue.push(Pos(i, j, linkValues[i][j]));
 
         }
+        bmNfe += Chromosome::nfe - lastNfe;
+        lastNfe = Chromosome::nfe;
+        checkNfe();
+
     }
 
     delete[] used;
@@ -1218,6 +1248,10 @@ void DSMGA2::tournamentSelection () {
 void DSMGA2::increaseOne () {
 
     bool success;
+    if (Chromosome::nfe != lastNfe)
+        printf ("Miscalculate: before increaseOne\n");
+
+
     do {
         Chromosome ch;
         do {
@@ -1225,6 +1259,9 @@ void DSMGA2::increaseOne () {
             ch.GHC();
         } while (isInP(ch));
     
+        initNfe += Chromosome::nfe - lastNfe;
+        lastNfe = Chromosome::nfe;
+
         ++nCurrent;
         // ++nOrig;
     
@@ -1266,6 +1303,8 @@ void DSMGA2::increaseOne () {
             }
             
         }
+        initBMNfe += Chromosome::nfe - lastNfe;
+        lastNfe = Chromosome::nfe;
     
         delete []rrr;
     } while (success == false);
